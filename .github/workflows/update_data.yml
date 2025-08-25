@@ -54,7 +54,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git pull --rebase origin main
+        git pull --rebase --autostash origin main
         git add data/ *.png
         git commit -m "📊 Update market data - $(date +'%Y-%m-%d %H:%M UTC')" -m "Automated update of S&P 500 PE ratio and market data"
         git push origin main
