@@ -1,7 +1,13 @@
 {
+<<<<<<< Updated upstream
   "date": "2025-08-25T17:49:09.989281",
   "pe_ratio": 500.0,
   "sp500_price": 6459.95,
+=======
+  "date": "2025-08-25T17:49:23.143925",
+  "pe_ratio": 500.0,
+  "sp500_price": 6459.73,
+>>>>>>> Stashed changes
   "ytd_return": 0,
   "percentile": 100,
   "status": "very-expensive",
