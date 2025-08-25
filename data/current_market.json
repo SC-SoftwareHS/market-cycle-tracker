@@ -1,12 +1,13 @@
 {
-  "date": "2024-12-27T21:00:00.000Z",
-  "pe_ratio": 29.6,
-  "sp500_price": 5950.28,
-  "ytd_return": 25.02,
-  "percentile": 85,
-  "status": "expensive",
-  "status_text": "EXPENSIVE",
-  "expected_10yr_return": "3-5%",
-  "description": "Market appears expensive based on historical standards",
-  "historical_average": 22.3
+  "date": "2025-08-25T17:37:56.045458",
+  "pe_ratio": 500.0,
+  "sp500_price": 6458.57,
+  "ytd_return": 0,
+  "percentile": 100,
+  "status": "very-expensive",
+  "status_text": "VERY EXPENSIVE",
+  "expected_10yr_return": "0-3%",
+  "description": "Market is very expensive relative to historical norms",
+  "historical_average": 22.3,
+  "monthly_data_updated": "2025-08-31"
 }
