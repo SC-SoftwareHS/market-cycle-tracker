@@ -4,11 +4,11 @@ on:
   # schedule:
     # Run every weekday at 4:30 PM EST (after market close) - DISABLED until scraper is fixed
     # - cron: '30 21 * * 1-5'
-  workflow_dispatch:  # Allow manual triggering
-  push:
-    paths:
-      - 'scripts/update_market_data.py'
-      - '.github/workflows/update_data.yml'
+  workflow_dispatch:  # Allow manual triggering only
+  # push:
+    # paths:
+      # - 'scripts/update_market_data.py'
+      # - '.github/workflows/update_data.yml'
 
 permissions:
   contents: write
