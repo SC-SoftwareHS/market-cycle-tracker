@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Cycle Tracker - Embed</title>
+    <style>
+        /* Inline CSS for embed version */
+        :root {
+            --attractive-color: #22c55e;
+            --fair-color: #f59e0b;
+            --expensive-color: #ef4444;
+            --very-expensive-color: #dc2626;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+
+        .embed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .embed-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .embed-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .embed-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .main-metric {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .pe-display {
+            text-align: center;
+            margin-right: 32px;
+        }
+
+        .pe-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            line-height: 1;
+        }
+
+        .pe-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .status-display {
+            text-align: center;
+        }
+
+        .status-badge-embed {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .status-badge-embed.attractive {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--attractive-color);
+            border: 1px solid var(--attractive-color);
+        }
+
+        .status-badge-embed.fair {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--fair-color);
+            border: 1px solid var(--fair-color);
+        }
+
+        .status-badge-embed.expensive {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--expensive-color);
+            border: 1px solid var(--expensive-color);
+        }
+
+        .status-badge-embed.very-expensive {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--very-expensive-color);
+            border: 1px solid var(--very-expensive-color);
+        }
+
+        .expected-return {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .quick-metric {
+            text-align: center;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .quick-metric-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+
+        .quick-metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .embed-footer {
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: 20px;
+        }
+
+        .view-full-link {
+            display: inline-block;
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+
+        .view-full-link:hover {
+            text-decoration: underline;
+        }
+
+        .data-source {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .loading {
+            opacity: 0.6;
+        }
+
+        @media (max-width: 600px) {
+            .embed-container {
+                padding: 16px;
+            }
+
+            .main-metric {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .pe-display {
+                margin-right: 0;
+            }
+
+            .pe-value {
+                font-size: 2.5rem;
+            }
+
+            .quick-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="embed-container" id="embedContainer">
+        <div class="embed-header">
+            <h2 class="embed-title">Market Cycle Tracker</h2>
+            <p class="embed-subtitle">Current S&P 500 valuation vs. historical norms</p>
+        </div>
+
+        <div class="main-metric">
+            <div class="pe-display">
+                <div class="pe-value" id="embedPE">--</div>
+                <div class="pe-label">Current PE Ratio</div>
+            </div>
+
+            <div class="status-display">
+                <div class="status-badge-embed" id="embedStatus">
+                    Loading...
+                </div>
+                <div class="expected-return" id="embedReturn">Expected 10yr: --</div>
+            </div>
+        </div>
+
+        <div class="quick-metrics">
+            <div class="quick-metric">
+                <div class="quick-metric-value" id="embedPercentile">--</div>
+                <div class="quick-metric-label">Percentile</div>
+            </div>
+            <div class="quick-metric">
+                <div class="quick-metric-value" id="embedAverage">--</div>
+                <div class="quick-metric-label">Avg PE</div>
+            </div>
+            <div class="quick-metric">
+                <div class="quick-metric-value" id="embedUpdate">--</div>
+                <div class="quick-metric-label">Last Update</div>
+            </div>
+        </div>
+
+        <div class="embed-footer">
+            <a href="index.html" class="view-full-link" target="_blank">
+                View Full Analysis & Historical Chart →
+            </a>
+            <div class="data-source">
+                Data from multpl.com | Updates daily
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EmbedMarketTracker {
+            constructor() {
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadData();
+                } catch (error) {
+                    console.error('Failed to load market data:', error);
+                    this.showFallbackData();
+                }
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch('data/current_market.json');
+                    let data;
+                    
+                    if (response.ok) {
+                        data = await response.json();
+                    } else {
+                        // Fallback data
+                        data = {
+                            pe_ratio: 29.6,
+                            percentile: 85,
+                            status: 'expensive',
+                            expected_10yr_return: '2-4%',
+                            historical_average: 17.5,
+                            date: new Date().toISOString()
+                        };
+                    }
+                    
+                    this.updateUI(data);
+                } catch (error) {
+                    this.showFallbackData();
+                }
+            }
+
+            updateUI(data) {
+                // Update PE ratio
+                const peElement = document.getElementById('embedPE');
+                if (peElement) {
+                    peElement.textContent = data.pe_ratio.toFixed(1);
+                }
+
+                // Update status
+                const statusElement = document.getElementById('embedStatus');
+                if (statusElement) {
+                    const pe = data.pe_ratio;
+                    let status, statusText;
+
+                    if (pe < 16) {
+                        status = 'attractive';
+                        statusText = 'ATTRACTIVE';
+                    } else if (pe < 20) {
+                        status = 'fair';
+                        statusText = 'FAIR VALUE';
+                    } else if (pe < 25) {
+                        status = 'expensive';
+                        statusText = 'EXPENSIVE';
+                    } else {
+                        status = 'very-expensive';
+                        statusText = 'VERY EXPENSIVE';
+                    }
+
+                    statusElement.className = `status-badge-embed ${status}`;
+                    statusElement.textContent = statusText;
+                }
+
+                // Update expected return
+                const returnElement = document.getElementById('embedReturn');
+                if (returnElement) {
+                    returnElement.textContent = `Expected 10yr: ${data.expected_10yr_return}`;
+                }
+
+                // Update percentile
+                const percentileElement = document.getElementById('embedPercentile');
+                if (percentileElement) {
+                    percentileElement.textContent = `${data.percentile}th`;
+                }
+
+                // Update historical average
+                const avgElement = document.getElementById('embedAverage');
+                if (avgElement) {
+                    avgElement.textContent = data.historical_average.toFixed(1);
+                }
+
+                // Update last update
+                const updateElement = document.getElementById('embedUpdate');
+                if (updateElement) {
+                    const date = new Date(data.date);
+                    updateElement.textContent = date.toLocaleDateString();
+                }
+
+                // Remove loading class
+                document.getElementById('embedContainer').classList.remove('loading');
+            }
+
+            showFallbackData() {
+                // Show basic fallback data if loading fails
+                const fallbackData = {
+                    pe_ratio: 29.6,
+                    percentile: 85,
+                    status: 'expensive',
+                    expected_10yr_return: '2-4%',
+                    historical_average: 17.5,
+                    date: new Date().toISOString()
+                };
+                
+                this.updateUI(fallbackData);
+            }
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('embedContainer').classList.add('loading');
+            new EmbedMarketTracker();
+        });
+    </script>
+</body>
+</html>

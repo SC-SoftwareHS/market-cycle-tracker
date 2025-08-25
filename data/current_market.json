@@ -1,0 +1,12 @@
+{
+  "date": "2024-12-27T21:00:00.000Z",
+  "pe_ratio": 29.6,
+  "sp500_price": 5950.28,
+  "ytd_return": 25.02,
+  "percentile": 85,
+  "status": "expensive",
+  "status_text": "EXPENSIVE",
+  "expected_10yr_return": "3-5%",
+  "description": "Market appears expensive based on historical standards",
+  "historical_average": 22.3
+}

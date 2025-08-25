@@ -1,0 +1,78 @@
+name: Update Market Data
+
+on:
+  schedule:
+    # Run every weekday at 4:30 PM EST (after market close)
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:  # Allow manual triggering
+  push:
+    paths:
+      - 'scripts/update_market_data.py'
+      - '.github/workflows/update_data.yml'
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        # Use a personal access token to allow the action to push changes
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests beautifulsoup4 lxml
+
+    - name: Run market data update
+      run: |
+        cd scripts
+        python update_market_data.py
+        
+    - name: Check for changes
+      id: verify-changed-files
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Commit and push changes
+      if: steps.verify-changed-files.outputs.changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/
+        git commit -m "📊 Update market data - $(date +'%Y-%m-%d %H:%M UTC')" -m "Automated update of S&P 500 PE ratio and market data"
+        git push
+
+    - name: Create summary
+      if: always()
+      run: |
+        echo "## Market Data Update Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -f "data/current_market.json" ]; then
+          echo "### Current Market Data" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat data/current_market.json >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Timestamp:** $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+        
+    - name: Send notification on failure
+      if: failure()
+      run: |
+        echo "❌ Market data update failed"
+        echo "Check the logs for more details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

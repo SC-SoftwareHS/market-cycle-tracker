@@ -1,0 +1,61 @@
+{
+  "valuation_ranges": {
+    "attractive": {
+      "pe_range": [0, 16],
+      "description": "Market appears undervalued",
+      "expected_10yr_return": "8-12%",
+      "historical_frequency": "20%",
+      "allocation_suggestion": "Consider overweight equity positions"
+    },
+    "fair_value": {
+      "pe_range": [16, 20],
+      "description": "Market is fairly valued",
+      "expected_10yr_return": "5-8%",
+      "historical_frequency": "45%",
+      "allocation_suggestion": "Maintain balanced allocation"
+    },
+    "expensive": {
+      "pe_range": [20, 25],
+      "description": "Market appears expensive",
+      "expected_10yr_return": "3-5%",
+      "historical_frequency": "25%",
+      "allocation_suggestion": "Consider reducing equity exposure"
+    },
+    "very_expensive": {
+      "pe_range": [25, 50],
+      "description": "Market is very expensive",
+      "expected_10yr_return": "0-3%",
+      "historical_frequency": "10%",
+      "allocation_suggestion": "Consider defensive positioning"
+    }
+  },
+  "data_sources": [
+    {
+      "name": "JP Morgan Guide to the Markets",
+      "url": "https://am.jpmorgan.com/us/en/asset-management/adv/insights/market-insights/guide-to-the-markets/",
+      "description": "Quarterly market outlook and analysis"
+    },
+    {
+      "name": "S&P 500 PE Ratio Data",
+      "url": "https://www.multpl.com/s-p-500-pe-ratio",
+      "description": "Current and historical PE ratio data"
+    },
+    {
+      "name": "Historical Market Data",
+      "url": "https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart",
+      "description": "Long-term S&P 500 valuation trends"
+    }
+  ],
+  "methodology": {
+    "pe_calculation": "Price-to-earnings ratio based on trailing 12-month earnings",
+    "percentile_calculation": "Current PE vs historical distribution since 1980",
+    "return_expectations": "Based on historical relationship between starting PE and subsequent 10-year returns",
+    "update_frequency": "Daily during market hours"
+  },
+  "disclaimers": [
+    "Past performance does not guarantee future results",
+    "PE ratios can remain elevated or depressed for extended periods",
+    "This is not investment advice - consult a qualified financial advisor",
+    "Market timing based solely on valuation metrics has limitations"
+  ]
+}

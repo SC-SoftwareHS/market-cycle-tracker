@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Cycle Tracker - Where Are We in the S&P 500 Cycle?</title>
+    <meta name="description" content="Track S&P 500 valuations and market cycles based on PE ratios. See where we are in the market cycle with daily updates.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Market Cycle Tracker</h1>
+            <p class="subtitle">Where are we in the S&P 500 valuation cycle?</p>
+        </header>
+
+        <!-- Main Gauge Section -->
+        <div class="gauge-section">
+            <div class="gauge-container">
+                <img id="marketGauge" src="market_gauge.png" alt="Market Valuation Gauge" class="gauge-image">
+                <div class="current-reading">
+                    <span class="pe-value" id="currentPE">--</span>
+                    <span class="pe-label">Current PE Ratio</span>
+                </div>
+            </div>
+            
+            <!-- Status Badge -->
+            <div class="status-badge" id="statusBadge">
+                <span class="status-text">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Percentile Rank</div>
+                <div class="metric-value" id="percentileRank">--</div>
+                <div class="metric-context">vs. history since 1980</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Historical Average</div>
+                <div class="metric-value" id="historicalAvg">--</div>
+                <div class="metric-context">Long-term mean PE</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Expected 10yr Return</div>
+                <div class="metric-value" id="expectedReturn">--</div>
+                <div class="metric-context">Based on current valuation</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-label">Last Update</div>
+                <div class="metric-value" id="lastUpdate">--</div>
+                <div class="metric-context">Updates daily</div>
+            </div>
+        </div>
+
+        <!-- JP Morgan Reference Section -->
+        <div class="reference-section">
+            <h2>Valuation Ranges & Expected Returns</h2>
+            <p class="reference-note">Based on institutional research from JP Morgan Guide to the Markets and historical S&P 500 data</p>
+            
+            <div class="valuation-table">
+                <div class="table-header">
+                    <span>PE Range</span>
+                    <span>Market Assessment</span>
+                    <span>Historical Frequency</span>
+                    <span>Expected 10yr Annual Return</span>
+                </div>
+                <div class="table-row attractive">
+                    <span>&lt; 16</span>
+                    <span>Attractive</span>
+                    <span>20% of time</span>
+                    <span>8-12%</span>
+                </div>
+                <div class="table-row fair">
+                    <span>16-20</span>
+                    <span>Fair Value</span>
+                    <span>45% of time</span>
+                    <span>5-8%</span>
+                </div>
+                <div class="table-row expensive">
+                    <span>20-25</span>
+                    <span>Expensive</span>
+                    <span>25% of time</span>
+                    <span>3-5%</span>
+                </div>
+                <div class="table-row very-expensive">
+                    <span>&gt; 25</span>
+                    <span>Very Expensive</span>
+                    <span>10% of time</span>
+                    <span>0-3%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Chart -->
+        <div class="chart-section">
+            <h2>Market Cycle Analysis (1980-2024)</h2>
+            <div class="chart-container">
+                <img id="marketCycleChart" src="market_cycle_chart.png" alt="S&P 500 Market Cycle Analysis" class="cycle-chart">
+            </div>
+            <p class="chart-note">
+                Top chart shows PE ratios over time with valuation zones. Bottom chart shows distribution of PE ratios 
+                and current market positioning. Data includes major market events and cycles since 1980.
+            </p>
+        </div>
+
+        <!-- Additional Context -->
+        <div class="context-section">
+            <h2>Understanding Market Valuations</h2>
+            <div class="context-grid">
+                <div class="context-card">
+                    <h3>What is PE Ratio?</h3>
+                    <p>The Price-to-Earnings ratio compares the S&P 500's current price to its earnings per share. 
+                    A higher PE suggests investors are paying more for each dollar of earnings.</p>
+                </div>
+                <div class="context-card">
+                    <h3>Why It Matters</h3>
+                    <p>Historical data shows a strong inverse relationship between starting PE ratios and subsequent 
+                    10-year returns. High valuations typically lead to lower future returns.</p>
+                </div>
+                <div class="context-card">
+                    <h3>Important Caveats</h3>
+                    <p>PE ratios can remain elevated or depressed for extended periods. This is not a timing tool 
+                    but rather a framework for setting return expectations.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="data-sources">
+                    <h4>Data Sources</h4>
+                    <ul>
+                        <li>S&P 500 PE Ratio: <a href="https://www.multpl.com/s-p-500-pe-ratio" target="_blank">multpl.com</a></li>
+                        <li>Historical Data: S&P 500 earnings reports</li>
+                        <li>Return Expectations: JP Morgan Asset Management research</li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/yourusername/market-cycle-tracker" target="_blank">View Source on GitHub</a></li>
+                        <li><a href="https://am.jpmorgan.com/us/en/asset-management/adv/insights/market-insights/guide-to-the-markets/" target="_blank">JP Morgan Guide to Markets</a></li>
+                        <li><a href="embed.html">Embed Widget</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="disclaimer">
+                <p><strong>Disclaimer:</strong> This tool is for educational purposes only and should not be considered investment advice. 
+                Past performance does not guarantee future results. Always consult with a qualified financial advisor.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Load application JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>
