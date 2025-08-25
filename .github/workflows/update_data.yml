@@ -21,9 +21,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        # Use a personal access token to allow the action to push changes
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
+        persist-credentials: true
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -54,9 +54,17 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add data/
+        git add data/ *.png
         git commit -m "📊 Update market data - $(date +'%Y-%m-%d %H:%M UTC')" -m "Automated update of S&P 500 PE ratio and market data"
-        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Push changes
+      if: steps.verify-changed-files.outputs.changed == 'true'  
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
 
     - name: Create summary
       if: always()
