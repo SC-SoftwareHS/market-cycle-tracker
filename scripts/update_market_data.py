@@ -91,11 +91,18 @@ class MarketDataUpdater:
                     element = soup.select_one(selector)
                     if element:
                         text = element.get_text().strip()
-                        # Extract number from text like "29.60" or "29.60 (Dec 27, 2024)"
-                        import re
-                        match = re.search(r'(\d+\.?\d*)', text)
-                        if match:
-                            pe_value = float(match.group(1))
+                        # Split by newlines and look for PE value after "PE Ratio:"
+                        lines = text.split('\n')
+                        for i, line in enumerate(lines):
+                            if 'PE Ratio:' in line and i < len(lines) - 1:
+                                # The PE value is usually on the next line
+                                next_line = lines[i + 1].strip()
+                                import re
+                                match = re.search(r'^(\d+\.?\d*)$', next_line)
+                                if match:
+                                    pe_value = float(match.group(1))
+                                    break
+                        if pe_value:
                             break
                 except:
                     continue
