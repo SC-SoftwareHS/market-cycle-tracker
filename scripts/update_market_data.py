@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import calendar
 import sys
 from pathlib import Path
@@ -270,6 +270,70 @@ class MarketDataUpdater:
         
         return new_entry
     
+    def update_weekly_data(self, pe_ratio, sp500_price):
+        """Update weekly data for current year"""
+        weekly_file = self.data_dir / 'weekly_sp500_2025.csv'
+        current_date = datetime.now()
+        current_year = current_date.year
+        
+        # Only update if it's 2025 or later
+        if current_year < 2025:
+            return None
+            
+        # Calculate week end date (Friday)
+        days_until_friday = (4 - current_date.weekday()) % 7
+        if days_until_friday == 0 and current_date.weekday() != 4:
+            days_until_friday = 7
+        week_end = current_date + timedelta(days=days_until_friday)
+        week_end_str = week_end.strftime('%Y-%m-%d')
+        
+        # Calculate week number
+        week_num = current_date.isocalendar()[1]
+        
+        # Read existing data
+        weekly_data = []
+        if weekly_file.exists():
+            with open(weekly_file, 'r') as f:
+                reader = csv.DictReader(f)
+                weekly_data = list(reader)
+        
+        # Check if this week already has data
+        existing_entry = None
+        for i, entry in enumerate(weekly_data):
+            if entry.get('Week_End_Date') == week_end_str:
+                existing_entry = i
+                break
+        
+        # Create new entry
+        new_entry = {
+            'Week_End_Date': week_end_str,
+            'Year': current_year,
+            'Week': week_num,
+            'PE_Ratio': pe_ratio,
+            'SP500_Price': sp500_price,
+            'Notes': f'Updated {current_date.strftime("%Y-%m-%d %H:%M")}'
+        }
+        
+        # Update or append
+        if existing_entry is not None:
+            weekly_data[existing_entry] = new_entry
+            print(f"Updated weekly data for week ending {week_end_str}")
+        else:
+            weekly_data.append(new_entry)
+            print(f"Added new weekly data for week ending {week_end_str}")
+        
+        # Sort by date
+        weekly_data.sort(key=lambda x: x['Week_End_Date'])
+        
+        # Write back
+        fieldnames = ['Week_End_Date', 'Year', 'Week', 'PE_Ratio', 'SP500_Price', 'Notes']
+        with open(weekly_file, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(weekly_data)
+        
+        return new_entry
+    
     def update_current_data(self):
         """Update current market data and monthly historical data"""
         print("Updating market data...")
@@ -290,6 +354,9 @@ class MarketDataUpdater:
         
         # Update monthly data file
         monthly_entry = self.update_monthly_data(pe_ratio, sp500_data['price'])
+        
+        # Update weekly data file (for 2025+)
+        weekly_entry = self.update_weekly_data(pe_ratio, sp500_data['price'])
         
         # Reload historical data to include any new monthly data
         self.historical_pes = []
