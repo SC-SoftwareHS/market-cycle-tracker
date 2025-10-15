@@ -1,13 +1,13 @@
 {
-  "date": "2025-10-14T21:31:47.692113",
+  "date": "2025-10-15T21:32:19.516521",
   "pe_ratio": 30.8,
-  "sp500_price": 6644.31,
+  "sp500_price": 6671.06,
   "ytd_return": 0,
-  "percentile": 90,
+  "percentile": 89,
   "status": "very-expensive",
   "status_text": "VERY EXPENSIVE",
   "expected_10yr_return": "0-3%",
   "description": "Market is very expensive relative to historical norms",
   "historical_average": 21.5,
-  "monthly_data_updated": "2025-09-30"
+  "monthly_data_updated": "2025-10-31"
 }
