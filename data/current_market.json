@@ -1,5 +1,5 @@
 {
-  "date": "2025-11-14T21:33:16.631229",
+  "date": "2025-11-15T21:31:29.655246",
   "pe_ratio": 30.4,
   "sp500_price": 6734.11,
   "ytd_return": 0,
@@ -9,5 +9,5 @@
   "expected_10yr_return": "0-3%",
   "description": "Market is very expensive relative to historical norms",
   "historical_average": 21.5,
-  "monthly_data_updated": "2025-10-31"
+  "monthly_data_updated": "2025-11-30"
 }
