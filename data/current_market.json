@@ -1,9 +1,9 @@
 {
-  "date": "2025-12-17T21:34:56.332797",
-  "pe_ratio": 30.8,
-  "sp500_price": 6721.43,
+  "date": "2025-12-18T21:32:44.116309",
+  "pe_ratio": 30.4,
+  "sp500_price": 6774.76,
   "ytd_return": 0,
-  "percentile": 89,
+  "percentile": 88,
   "status": "very-expensive",
   "status_text": "VERY EXPENSIVE",
   "expected_10yr_return": "0-3%",
