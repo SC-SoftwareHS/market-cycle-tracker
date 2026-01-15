@@ -1,7 +1,7 @@
 {
-  "date": "2026-01-14T21:35:58.323192",
-  "pe_ratio": 31.4,
-  "sp500_price": 6926.6,
+  "date": "2026-01-15T21:35:52.773103",
+  "pe_ratio": 31.3,
+  "sp500_price": 6944.47,
   "ytd_return": 0,
   "percentile": 90,
   "status": "very-expensive",
@@ -9,5 +9,5 @@
   "expected_10yr_return": "0-3%",
   "description": "Market is very expensive relative to historical norms",
   "historical_average": 21.5,
-  "monthly_data_updated": "2025-12-31"
+  "monthly_data_updated": "2026-01-31"
 }
