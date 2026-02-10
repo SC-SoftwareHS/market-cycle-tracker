@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Cycle Tracker - Embed</title>
     <style>
-        /* Inline CSS for embed version */
         :root {
+            --screaming-buy-color: #16a34a;
             --attractive-color: #22c55e;
             --fair-color: #f59e0b;
             --expensive-color: #ef4444;
             --very-expensive-color: #dc2626;
+            --bubble-color: #991b1b;
             --text-primary: #1f2937;
             --text-secondary: #6b7280;
             --text-muted: #9ca3af;
@@ -21,11 +22,7 @@
             --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: var(--font-sans);
@@ -44,171 +41,45 @@
             border: 1px solid var(--border-color);
         }
 
-        .embed-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
+        .embed-header { text-align: center; margin-bottom: 24px; }
+        .embed-title { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+        .embed-subtitle { font-size: 0.875rem; color: var(--text-secondary); }
 
-        .embed-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
+        .main-metric { display: flex; justify-content: center; align-items: center; margin-bottom: 24px; }
+        .pe-display { text-align: center; margin-right: 32px; }
+        .pe-value { font-size: 3rem; font-weight: 700; color: var(--text-primary); font-family: 'SF Mono', Monaco, monospace; line-height: 1; }
+        .pe-label { font-size: 0.875rem; color: var(--text-secondary); margin-top: 4px; }
 
-        .embed-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
+        .status-display { text-align: center; }
+        .status-badge-embed { display: inline-block; padding: 8px 16px; border-radius: 16px; font-weight: 600; font-size: 1rem; margin-bottom: 8px; }
+        .status-badge-embed.screaming-buy { background-color: rgba(22, 163, 74, 0.1); color: var(--screaming-buy-color); border: 1px solid var(--screaming-buy-color); }
+        .status-badge-embed.very-attractive { background-color: rgba(34, 197, 94, 0.15); color: #15803d; border: 1px solid var(--attractive-color); }
+        .status-badge-embed.attractive { background-color: rgba(34, 197, 94, 0.1); color: var(--attractive-color); border: 1px solid var(--attractive-color); }
+        .status-badge-embed.fair { background-color: rgba(245, 158, 11, 0.1); color: var(--fair-color); border: 1px solid var(--fair-color); }
+        .status-badge-embed.expensive { background-color: rgba(239, 68, 68, 0.1); color: var(--expensive-color); border: 1px solid var(--expensive-color); }
+        .status-badge-embed.very-expensive { background-color: rgba(220, 38, 38, 0.1); color: var(--very-expensive-color); border: 1px solid var(--very-expensive-color); }
+        .status-badge-embed.bubble { background-color: rgba(153, 27, 27, 0.1); color: var(--bubble-color); border: 1px solid var(--bubble-color); }
 
-        .main-metric {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 24px;
-        }
+        .expected-return { font-size: 0.875rem; color: var(--text-secondary); }
 
-        .pe-display {
-            text-align: center;
-            margin-right: 32px;
-        }
+        .quick-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .quick-metric { text-align: center; padding: 12px; background: var(--bg-secondary); border-radius: 8px; }
+        .quick-metric-value { font-size: 1.25rem; font-weight: 600; color: var(--text-primary); font-family: monospace; }
+        .quick-metric-label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        .pe-value {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-            line-height: 1;
-        }
+        .embed-footer { text-align: center; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 20px; }
+        .view-full-link { display: inline-block; color: #3b82f6; text-decoration: none; font-weight: 500; font-size: 0.875rem; margin-bottom: 8px; }
+        .view-full-link:hover { text-decoration: underline; }
+        .data-source { font-size: 0.75rem; color: var(--text-muted); }
 
-        .pe-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        .status-display {
-            text-align: center;
-        }
-
-        .status-badge-embed {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 8px;
-        }
-
-        .status-badge-embed.attractive {
-            background-color: rgba(34, 197, 94, 0.1);
-            color: var(--attractive-color);
-            border: 1px solid var(--attractive-color);
-        }
-
-        .status-badge-embed.fair {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: var(--fair-color);
-            border: 1px solid var(--fair-color);
-        }
-
-        .status-badge-embed.expensive {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--expensive-color);
-            border: 1px solid var(--expensive-color);
-        }
-
-        .status-badge-embed.very-expensive {
-            background-color: rgba(220, 38, 38, 0.1);
-            color: var(--very-expensive-color);
-            border: 1px solid var(--very-expensive-color);
-        }
-
-        .expected-return {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .quick-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .quick-metric {
-            text-align: center;
-            padding: 12px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-        }
-
-        .quick-metric-value {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-family: monospace;
-        }
-
-        .quick-metric-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .embed-footer {
-            text-align: center;
-            border-top: 1px solid var(--border-color);
-            padding-top: 16px;
-            margin-top: 20px;
-        }
-
-        .view-full-link {
-            display: inline-block;
-            color: #3b82f6;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.875rem;
-            margin-bottom: 8px;
-        }
-
-        .view-full-link:hover {
-            text-decoration: underline;
-        }
-
-        .data-source {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .loading {
-            opacity: 0.6;
-        }
+        .loading { opacity: 0.6; }
 
         @media (max-width: 600px) {
-            .embed-container {
-                padding: 16px;
-            }
-
-            .main-metric {
-                flex-direction: column;
-                align-items: center;
-                gap: 16px;
-            }
-
-            .pe-display {
-                margin-right: 0;
-            }
-
-            .pe-value {
-                font-size: 2.5rem;
-            }
-
-            .quick-metrics {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .embed-container { padding: 16px; }
+            .main-metric { flex-direction: column; align-items: center; gap: 16px; }
+            .pe-display { margin-right: 0; }
+            .pe-value { font-size: 2.5rem; }
+            .quick-metrics { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -216,20 +87,17 @@
     <div class="embed-container" id="embedContainer">
         <div class="embed-header">
             <h2 class="embed-title">Market Cycle Tracker</h2>
-            <p class="embed-subtitle">Current S&P 500 valuation vs. historical norms</p>
+            <p class="embed-subtitle">Cyclically-adjusted S&P 500 valuation (Shiller CAPE)</p>
         </div>
 
         <div class="main-metric">
             <div class="pe-display">
                 <div class="pe-value" id="embedPE">--</div>
-                <div class="pe-label">Current PE Ratio</div>
+                <div class="pe-label">Current CAPE Ratio</div>
             </div>
-
             <div class="status-display">
-                <div class="status-badge-embed" id="embedStatus">
-                    Loading...
-                </div>
-                <div class="expected-return" id="embedReturn">Expected 10yr: --</div>
+                <div class="status-badge-embed" id="embedStatus">Loading...</div>
+                <div class="expected-return" id="embedReturn">Implied 10yr: --</div>
             </div>
         </div>
 
@@ -240,7 +108,7 @@
             </div>
             <div class="quick-metric">
                 <div class="quick-metric-value" id="embedAverage">--</div>
-                <div class="quick-metric-label">Avg PE</div>
+                <div class="quick-metric-label">Avg CAPE</div>
             </div>
             <div class="quick-metric">
                 <div class="quick-metric-value" id="embedUpdate">--</div>
@@ -250,130 +118,103 @@
 
         <div class="embed-footer">
             <a href="https://sc-softwarehs.github.io/market-cycle-tracker/" class="view-full-link" target="_blank">
-                View Full Analysis & Historical Chart →
+                View Full Analysis & Historical Chart &rarr;
             </a>
             <div class="data-source">
-                Data from multpl.com | Updates daily
+                Data from Shiller/Yale &amp; multpl.com | Updates daily
             </div>
         </div>
     </div>
 
     <script>
         class EmbedMarketTracker {
-            constructor() {
-                this.init();
-            }
+            constructor() { this.init(); }
 
             async init() {
-                try {
-                    await this.loadData();
-                } catch (error) {
-                    console.error('Failed to load market data:', error);
-                    this.showFallbackData();
-                }
+                try { await this.loadData(); }
+                catch (error) { console.error('Failed to load:', error); this.showFallbackData(); }
             }
 
             async loadData() {
                 try {
                     const response = await fetch('data/current_market.json');
                     let data;
-                    
                     if (response.ok) {
                         data = await response.json();
                     } else {
-                        // Fallback data
-                        data = {
-                            pe_ratio: 29.6,
-                            percentile: 85,
-                            status: 'expensive',
-                            expected_10yr_return: '2-4%',
-                            historical_average: 17.5,
-                            date: new Date().toISOString()
-                        };
+                        data = this.getFallback();
                     }
-                    
                     this.updateUI(data);
                 } catch (error) {
                     this.showFallbackData();
                 }
             }
 
+            getFallback() {
+                return {
+                    cape: 38.0, pe_ratio: 38.0, percentile: 97, status: 'bubble',
+                    expected_10yr_return: '2%', historical_average: 17.8,
+                    impliedReturn: 2.97, date: new Date().toISOString()
+                };
+            }
+
             updateUI(data) {
-                // Update PE ratio
                 const peElement = document.getElementById('embedPE');
                 if (peElement) {
-                    peElement.textContent = data.pe_ratio.toFixed(1);
+                    const cape = data.cape || data.pe_ratio;
+                    peElement.textContent = cape.toFixed(1);
                 }
 
-                // Update status
                 const statusElement = document.getElementById('embedStatus');
                 if (statusElement) {
-                    const pe = data.pe_ratio;
+                    const cape = data.cape || data.pe_ratio;
                     let status, statusText;
+                    if (cape < 12) { status = 'screaming-buy'; statusText = 'SCREAMING BUY'; }
+                    else if (cape < 16) { status = 'very-attractive'; statusText = 'VERY ATTRACTIVE'; }
+                    else if (cape < 20) { status = 'attractive'; statusText = 'ATTRACTIVE'; }
+                    else if (cape < 25) { status = 'fair'; statusText = 'FAIR VALUE'; }
+                    else if (cape < 30) { status = 'expensive'; statusText = 'EXPENSIVE'; }
+                    else if (cape < 35) { status = 'very-expensive'; statusText = 'VERY EXPENSIVE'; }
+                    else { status = 'bubble'; statusText = 'BUBBLE TERRITORY'; }
 
-                    if (pe < 16) {
-                        status = 'attractive';
-                        statusText = 'ATTRACTIVE';
-                    } else if (pe < 20) {
-                        status = 'fair';
-                        statusText = 'FAIR VALUE';
-                    } else if (pe < 25) {
-                        status = 'expensive';
-                        statusText = 'EXPENSIVE';
-                    } else {
-                        status = 'very-expensive';
-                        statusText = 'VERY EXPENSIVE';
-                    }
+                    if (data.status) status = data.status;
+                    if (data.status_text) statusText = data.status_text;
 
                     statusElement.className = `status-badge-embed ${status}`;
                     statusElement.textContent = statusText;
                 }
 
-                // Update expected return
                 const returnElement = document.getElementById('embedReturn');
                 if (returnElement) {
-                    returnElement.textContent = `Expected 10yr: ${data.expected_10yr_return}`;
+                    if (data.impliedReturn !== undefined) {
+                        returnElement.textContent = `Implied 10yr: ${data.impliedReturn}%`;
+                    } else {
+                        returnElement.textContent = `Implied 10yr: ${data.expected_10yr_return}`;
+                    }
                 }
 
-                // Update percentile
                 const percentileElement = document.getElementById('embedPercentile');
                 if (percentileElement) {
                     percentileElement.textContent = `${data.percentile}th`;
                 }
 
-                // Update historical average
                 const avgElement = document.getElementById('embedAverage');
                 if (avgElement) {
-                    avgElement.textContent = data.historical_average.toFixed(1);
+                    avgElement.textContent = (data.historical_average || 17.8).toFixed(1);
                 }
 
-                // Update last update
                 const updateElement = document.getElementById('embedUpdate');
                 if (updateElement) {
-                    const date = new Date(data.date);
-                    updateElement.textContent = date.toLocaleDateString();
+                    const d = new Date(data.date);
+                    updateElement.textContent = d.toLocaleDateString();
                 }
 
-                // Remove loading class
                 document.getElementById('embedContainer').classList.remove('loading');
             }
 
-            showFallbackData() {
-                // Show basic fallback data if loading fails
-                const fallbackData = {
-                    pe_ratio: 29.6,
-                    percentile: 85,
-                    status: 'expensive',
-                    expected_10yr_return: '2-4%',
-                    historical_average: 17.5,
-                    date: new Date().toISOString()
-                };
-                
-                this.updateUI(fallbackData);
-            }
+            showFallbackData() { this.updateUI(this.getFallback()); }
         }
 
-        // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('embedContainer').classList.add('loading');
             new EmbedMarketTracker();

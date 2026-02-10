@@ -7,10 +7,6 @@ on:
     # Also run weekly on Mondays at 9:00 AM EST (2:00 PM UTC) for weekly summary
     - cron: '0 14 * * 1'
   workflow_dispatch:  # Allow manual triggering
-  # push:
-    # paths:
-      # - 'scripts/update_market_data.py'
-      # - '.github/workflows/update_data.yml'
 
 permissions:
   contents: write
@@ -35,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 lxml pandas numpy matplotlib
+        pip install requests beautifulsoup4 lxml pandas openpyxl xlrd numpy matplotlib
 
     - name: Run market data update
       run: |
@@ -58,7 +54,7 @@ jobs:
         git config --local user.name "GitHub Action"
         git pull --rebase --autostash origin main
         git add data/ *.png
-        git commit -m "📊 Update market data - $(date +'%Y-%m-%d %H:%M UTC')" -m "Automated update of S&P 500 PE ratio and market data"
+        git commit -m "Update CAPE data - $(date +'%Y-%m-%d %H:%M UTC')" -m "Automated update of Shiller CAPE ratio and market data"
         git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,5 +78,5 @@ jobs:
     - name: Send notification on failure
       if: failure()
       run: |
-        echo "❌ Market data update failed"
-        echo "Check the logs for more details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        echo "Market data update failed"
+        echo "Check the logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

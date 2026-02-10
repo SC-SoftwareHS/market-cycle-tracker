@@ -1,10 +1,12 @@
 /* Market Cycle Tracker Styles */
 :root {
-    /* Color scheme based on valuation levels */
+    /* Color scheme based on CAPE valuation levels */
+    --screaming-buy-color: #16a34a;  /* Deep green - crisis lows */
     --attractive-color: #22c55e;      /* Green - cheap */
     --fair-color: #f59e0b;           /* Amber - fair value */
     --expensive-color: #ef4444;       /* Red - expensive */
     --very-expensive-color: #dc2626;  /* Dark red - very expensive */
+    --bubble-color: #991b1b;          /* Darkest red - bubble territory */
     
     /* Neutral colors */
     --text-primary: #1f2937;
@@ -118,6 +120,18 @@ h1 {
     min-width: 200px;
 }
 
+.status-badge.screaming-buy {
+    background-color: rgba(22, 163, 74, 0.1);
+    color: var(--screaming-buy-color);
+    border: 2px solid var(--screaming-buy-color);
+}
+
+.status-badge.very-attractive {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #15803d;
+    border: 2px solid var(--attractive-color);
+}
+
 .status-badge.attractive {
     background-color: rgba(34, 197, 94, 0.1);
     color: var(--attractive-color);
@@ -140,6 +154,12 @@ h1 {
     background-color: rgba(220, 38, 38, 0.1);
     color: var(--very-expensive-color);
     border: 2px solid var(--very-expensive-color);
+}
+
+.status-badge.bubble {
+    background-color: rgba(153, 27, 27, 0.1);
+    color: var(--bubble-color);
+    border: 2px solid var(--bubble-color);
 }
 
 /* Metrics Grid */
@@ -241,7 +261,14 @@ h1 {
     font-size: 0.875rem;
 }
 
-.table-row.attractive > span:first-child {
+.table-row.screaming-buy > span:first-child {
+    background: rgba(22, 163, 74, 0.15);
+    color: var(--screaming-buy-color);
+    font-weight: 600;
+}
+
+.table-row.attractive > span:first-child,
+.table-row.fair-attractive > span:first-child {
     background: rgba(34, 197, 94, 0.1);
     color: var(--attractive-color);
     font-weight: 600;
@@ -262,6 +289,12 @@ h1 {
 .table-row.very-expensive > span:first-child {
     background: rgba(220, 38, 38, 0.1);
     color: var(--very-expensive-color);
+    font-weight: 600;
+}
+
+.table-row.bubble > span:first-child {
+    background: rgba(153, 27, 27, 0.1);
+    color: var(--bubble-color);
     font-weight: 600;
 }
 

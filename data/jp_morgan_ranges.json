@@ -1,61 +1,82 @@
 {
   "valuation_ranges": {
-    "attractive": {
-      "pe_range": [0, 16],
-      "description": "Market appears undervalued",
-      "expected_10yr_return": "8-12%",
-      "historical_frequency": "20%",
+    "screaming_buy": {
+      "cape_range": [0, 12],
+      "description": "Market at crisis-level valuations",
+      "expected_10yr_return": "15%+",
+      "historical_frequency": "<5%",
+      "allocation_suggestion": "Maximum equity allocation - rare opportunity"
+    },
+    "very_attractive": {
+      "cape_range": [12, 16],
+      "description": "Market significantly undervalued",
+      "expected_10yr_return": "10-12%",
+      "historical_frequency": "15%",
       "allocation_suggestion": "Consider overweight equity positions"
     },
+    "attractive": {
+      "cape_range": [16, 20],
+      "description": "Market near historical average",
+      "expected_10yr_return": "8-10%",
+      "historical_frequency": "30%",
+      "allocation_suggestion": "Normal to slightly overweight equity"
+    },
     "fair_value": {
-      "pe_range": [16, 20],
+      "cape_range": [20, 25],
       "description": "Market is fairly valued",
       "expected_10yr_return": "5-8%",
-      "historical_frequency": "45%",
+      "historical_frequency": "25%",
       "allocation_suggestion": "Maintain balanced allocation"
     },
     "expensive": {
-      "pe_range": [20, 25],
+      "cape_range": [25, 30],
       "description": "Market appears expensive",
       "expected_10yr_return": "3-5%",
-      "historical_frequency": "25%",
+      "historical_frequency": "15%",
       "allocation_suggestion": "Consider reducing equity exposure"
     },
     "very_expensive": {
-      "pe_range": [25, 50],
+      "cape_range": [30, 35],
       "description": "Market is very expensive",
-      "expected_10yr_return": "0-3%",
-      "historical_frequency": "10%",
-      "allocation_suggestion": "Consider defensive positioning"
+      "expected_10yr_return": "2-4%",
+      "historical_frequency": "5%",
+      "allocation_suggestion": "Defensive positioning recommended"
+    },
+    "bubble_territory": {
+      "cape_range": [35, 100],
+      "description": "Market at bubble-level valuations",
+      "expected_10yr_return": "0-2%",
+      "historical_frequency": "<5%",
+      "allocation_suggestion": "Maximum defensive positioning"
     }
   },
   "data_sources": [
     {
+      "name": "Robert Shiller - Yale University",
+      "url": "http://www.econ.yale.edu/~shiller/data.htm",
+      "description": "Historical monthly CAPE data since 1881"
+    },
+    {
+      "name": "Shiller PE Ratio Data",
+      "url": "https://www.multpl.com/shiller-pe",
+      "description": "Current and recent Shiller CAPE ratio"
+    },
+    {
       "name": "JP Morgan Guide to the Markets",
       "url": "https://am.jpmorgan.com/us/en/asset-management/adv/insights/market-insights/guide-to-the-markets/",
       "description": "Quarterly market outlook and analysis"
-    },
-    {
-      "name": "S&P 500 PE Ratio Data",
-      "url": "https://www.multpl.com/s-p-500-pe-ratio",
-      "description": "Current and historical PE ratio data"
-    },
-    {
-      "name": "Historical Market Data",
-      "url": "https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart",
-      "description": "Long-term S&P 500 valuation trends"
     }
   ],
   "methodology": {
-    "pe_calculation": "Price-to-earnings ratio based on trailing 12-month earnings",
-    "percentile_calculation": "Current PE vs historical distribution since 1980",
-    "return_expectations": "Based on historical relationship between starting PE and subsequent 10-year returns",
-    "update_frequency": "Daily during market hours"
+    "cape_calculation": "S&P 500 price divided by 10-year average of real (inflation-adjusted) earnings, as defined by Robert Shiller",
+    "percentile_calculation": "Current CAPE vs all monthly readings since 1881",
+    "return_regression": "Implied Return = -0.327 * CAPE + 15.42 (R-squared = 0.737)",
+    "update_frequency": "Daily after market close"
   },
   "disclaimers": [
     "Past performance does not guarantee future results",
-    "PE ratios can remain elevated or depressed for extended periods",
+    "CAPE can remain elevated for extended periods due to structural changes",
     "This is not investment advice - consult a qualified financial advisor",
-    "Market timing based solely on valuation metrics has limitations"
+    "The CAPE regression explains about 74% of return variation; significant uncertainty remains"
   ]
 }

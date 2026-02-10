@@ -1,524 +1,432 @@
 #!/usr/bin/env python3
 """
 Market Data Updater for Market Cycle Tracker
-Scrapes current S&P 500 PE ratio and updates monthly data files
+Fetches Shiller CAPE (Cyclically Adjusted PE) data and derived metrics.
+
+Data sources:
+  - Robert Shiller's dataset from Yale (historical monthly CAPE since 1881)
+  - multpl.com for current/recent CAPE values and other metrics
+
+Outputs:
+  - data/current_market.json    (current snapshot with derived metrics)
+  - data/cape_historical.json   (monthly CAPE data from 1881 to present)
 """
+
+import json
+import re
+import sys
+from datetime import datetime, date
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-import json
-import csv
-from datetime import datetime, date, timedelta
-import calendar
-import sys
-from pathlib import Path
+import pandas as pd
 
-class MarketDataUpdater:
-    def __init__(self):
-        self.data_dir = Path(__file__).parent.parent / 'data'
-        self.data_dir.mkdir(exist_ok=True)
-        
-        # Historical PE ratios for percentile calculation
-        self.historical_pes = []
-        self.load_historical_data()
-    
-    def load_historical_data(self):
-        """Load monthly historical data for percentile calculations"""
-        monthly_file = self.data_dir / 'monthly_sp500.csv'
-        
-        if monthly_file.exists():
-            try:
-                with open(monthly_file, 'r') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        pe = self.safe_float(row.get('PE_Ratio', row.get('pe_ratio', 0)))
-                        if pe > 0:
-                            self.historical_pes.append(pe)
-            except Exception as e:
-                print(f"Warning: Could not load monthly historical data: {e}")
-        
-        # Fallback to annual data if monthly doesn't exist
-        if not self.historical_pes:
-            annual_file = self.data_dir / 'historical_sp500.csv'
-            if annual_file.exists():
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+HEADERS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+
+
+def scrape_number(url):
+    """Scrape a numeric value from a multpl.com page."""
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        el = soup.select_one("#current")
+        if el:
+            text = el.get_text(strip=True)
+            if ":" in text:
+                after_colon = text.split(":")[1]
+                match = re.search(r'[\d,]+\.?\d*', after_colon)
+                if match:
+                    return float(match.group().replace(",", ""))
+            match = re.search(r'\d+\.\d+', text)
+            if match:
+                return float(match.group().replace(",", ""))
+    except Exception as e:
+        print(f"Warning: Could not scrape {url}: {e}")
+    return None
+
+
+def scrape_table_values(url, limit=60):
+    """Scrape monthly values from a multpl.com table page."""
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        table = soup.select_one("table#datatable")
+        if not table:
+            return []
+        rows = table.select("tr")[1:limit + 1]
+        results = []
+        for row in rows:
+            cells = row.select("td")
+            if len(cells) >= 2:
+                date_text = cells[0].get_text(strip=True)
+                val_text = cells[1].get_text(strip=True).replace(",", "").replace("%", "")
                 try:
-                    with open(annual_file, 'r') as f:
-                        reader = csv.DictReader(f)
-                        for row in reader:
-                            pe = self.safe_float(row.get('Trailing_PE_Jan1', row.get('pe_ratio', 0)))
-                            if pe > 0:
-                                self.historical_pes.append(pe)
-                except Exception as e:
-                    print(f"Warning: Could not load annual historical data: {e}")
-        
-        # If still no historical data, use reasonable defaults
-        if not self.historical_pes:
-            print("Using default historical PE data for calculations")
-            # Expanded sample covering monthly variations
-            self.historical_pes = [
-                7.2, 8.1, 10.9, 11.3, 9.6, 14.5, 18.0, 14.3, 11.7, 15.1,  # 1980s
-                15.5, 22.8, 21.8, 21.4, 15.0, 18.1, 19.1, 24.4, 32.9, 30.5,  # 1990s
-                26.4, 27.6, 31.4, 22.7, 20.7, 18.9, 17.4, 17.4, 70.9, 20.7,  # 2000s
-                16.3, 14.9, 16.5, 18.5, 20.0, 22.3, 23.7, 25.3, 20.0, 23.2,  # 2010s
-                35.3, 24.9, 19.8, 24.7, 29.6  # 2020s
-            ]
-    
-    def scrape_pe_ratio_multpl(self):
-        """Scrape PE ratio from multpl.com"""
-        url = "https://www.multpl.com/s-p-500-pe-ratio"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
-        try:
-            response = requests.get(url, headers=headers, timeout=10)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Look for the current PE value - it's usually in a prominent div
-            # Try multiple selectors as the site structure might change
-            selectors = [
-                '#current',
-                '.current-value',
-                '[data-current-value]',
-                'div:contains("Current")'
-            ]
-            
-            pe_value = None
-            for selector in selectors:
-                try:
-                    element = soup.select_one(selector)
-                    if element:
-                        text = element.get_text().strip()
-                        # Split by newlines and look for PE value after "PE Ratio:"
-                        lines = text.split('\n')
-                        for i, line in enumerate(lines):
-                            if 'PE Ratio:' in line and i < len(lines) - 1:
-                                # The PE value is usually on the next line
-                                next_line = lines[i + 1].strip()
-                                import re
-                                match = re.search(r'^(\d+\.?\d*)$', next_line)
-                                if match:
-                                    pe_value = float(match.group(1))
-                                    break
-                        if pe_value:
-                            break
-                except:
+                    val = float(val_text)
+                    results.append({"date_text": date_text, "value": val})
+                except ValueError:
                     continue
-            
-            if pe_value is None:
-                # Try to find any number that looks like a PE ratio
-                text = soup.get_text()
-                import re
-                matches = re.findall(r'(\d{1,2}\.\d{1,2})', text)
-                if matches:
-                    # Take the first reasonable PE ratio (between 5 and 50)
-                    for match in matches:
-                        potential_pe = float(match)
-                        if 5 <= potential_pe <= 50:
-                            pe_value = potential_pe
-                            break
-            
-            return pe_value
-            
-        except requests.RequestException as e:
-            print(f"Error fetching from multpl.com: {e}")
-            return None
-        except Exception as e:
-            print(f"Error parsing PE from multpl.com: {e}")
-            return None
-    
-    def scrape_sp500_price_yahoo(self):
-        """Get S&P 500 price from Yahoo Finance"""
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
-        
+        return results
+    except Exception as e:
+        print(f"Warning: Could not scrape table {url}: {e}")
+        return []
+
+
+def fetch_shiller_excel():
+    """
+    Download Shiller's historical dataset and extract CAPE data.
+    Returns list of dicts: [{date, cape, price, rate, fwd10yr}, ...]
+    """
+    url = "http://www.econ.yale.edu/~shiller/data/ie_data.xls"
+    print("Downloading Shiller dataset from Yale...")
+    try:
+        resp = requests.get(url, headers=HEADERS, timeout=30)
+        resp.raise_for_status()
+    except Exception as e:
+        print(f"Error downloading Shiller data: {e}")
+        return None
+
+    tmp_path = DATA_DIR / "ie_data.xls"
+    tmp_path.write_bytes(resp.content)
+
+    try:
+        df = pd.read_excel(str(tmp_path), sheet_name="Data", header=None)
+    except Exception as e:
+        print(f"Error reading Excel: {e}")
+        return None
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+    HEADER_ROW = 7
+    COL_DATE = 0
+    COL_PRICE = 1
+    COL_RATE = 6
+    COL_CAPE = 12
+    COL_FWD_10YR = 19
+
+    records = []
+    for i in range(HEADER_ROW + 1, len(df)):
+        date_val = df.iloc[i, COL_DATE]
+        if pd.isna(date_val):
+            continue
         try:
-            response = requests.get(url, headers=headers, timeout=10)
-            response.raise_for_status()
-            
-            data = response.json()
-            
-            # Extract current price and calculate YTD return
-            result = data['chart']['result'][0]
-            current_price = result['meta']['regularMarketPrice']
-            
-            # Get year-to-date performance (approximate)
-            ytd_change = result['meta'].get('regularMarketChangePercent', 0)
-            
-            return {
-                'price': current_price,
-                'ytd_return': ytd_change
-            }
-            
-        except Exception as e:
-            print(f"Error fetching S&P 500 data from Yahoo: {e}")
-            return None
-    
-    def calculate_percentile(self, current_pe):
-        """Calculate percentile rank of current PE vs historical data"""
-        if not self.historical_pes:
-            return 50  # Default to median if no historical data
-        
-        below_current = sum(1 for pe in self.historical_pes if pe < current_pe)
-        total = len(self.historical_pes)
-        
-        percentile = (below_current / total) * 100
-        return round(percentile)
-    
-    def determine_market_status(self, pe_ratio):
-        """Determine market status based on PE ratio"""
-        if pe_ratio < 16:
-            return {
-                'status': 'attractive',
-                'status_text': 'ATTRACTIVE',
-                'expected_return': '8-12%',
-                'description': 'Market appears undervalued based on historical standards'
-            }
-        elif pe_ratio < 20:
-            return {
-                'status': 'fair',
-                'status_text': 'FAIR VALUE',
-                'expected_return': '5-8%',
-                'description': 'Market is fairly valued relative to historical norms'
-            }
-        elif pe_ratio < 25:
-            return {
-                'status': 'expensive',
-                'status_text': 'EXPENSIVE',
-                'expected_return': '3-5%',
-                'description': 'Market appears expensive based on historical standards'
-            }
-        else:
-            return {
-                'status': 'very-expensive',
-                'status_text': 'VERY EXPENSIVE',
-                'expected_return': '0-3%',
-                'description': 'Market is very expensive relative to historical norms'
-            }
-    
-    def safe_float(self, value, default=0.0):
-        """Safely convert value to float"""
-        try:
-            return float(value)
+            date_float = float(date_val)
         except (ValueError, TypeError):
-            return default
-    
-    def get_current_month_end(self):
-        """Get the last day of current month for data aggregation"""
-        today = date.today()
-        # If it's before the 15th of the month, use previous month's end
-        # This ensures we have enough data for a stable monthly reading
-        if today.day < 15:
-            if today.month == 1:
-                year = today.year - 1
-                month = 12
-            else:
-                year = today.year
-                month = today.month - 1
-        else:
-            year = today.year
-            month = today.month
-        
-        # Get last day of the month
-        last_day = calendar.monthrange(year, month)[1]
-        return date(year, month, last_day)
-    
-    def update_monthly_data(self, current_pe, sp500_price):
-        """Update or append monthly data file"""
-        monthly_file = self.data_dir / 'monthly_sp500.csv'
-        month_end = self.get_current_month_end()
-        
-        # Load existing monthly data
-        monthly_data = []
-        if monthly_file.exists():
-            with open(monthly_file, 'r') as f:
-                reader = csv.DictReader(f)
-                monthly_data = list(reader)
-        
-        # Check if we already have data for this month
-        current_month_str = month_end.strftime('%Y-%m')
-        existing_entry = None
-        for i, row in enumerate(monthly_data):
-            if row.get('Date', '').startswith(current_month_str):
-                existing_entry = i
-                break
-        
-        # Create new entry
-        new_entry = {
-            'Date': month_end.strftime('%Y-%m-%d'),
-            'Year': month_end.year,
-            'Month': month_end.month,
-            'PE_Ratio': round(current_pe, 1),
-            'SP500_Price': round(sp500_price, 2),
-            'Month_End': month_end.strftime('%Y-%m-%d')
-        }
-        
-        # Update existing or append new
-        if existing_entry is not None:
-            monthly_data[existing_entry] = new_entry
-            print(f"Updated existing monthly data for {current_month_str}")
-        else:
-            monthly_data.append(new_entry)
-            print(f"Added new monthly data for {current_month_str}")
-        
-        # Sort by date
-        monthly_data.sort(key=lambda x: x['Date'])
-        
-        # Write back to file
-        fieldnames = ['Date', 'Year', 'Month', 'PE_Ratio', 'SP500_Price', 'Month_End']
-        with open(monthly_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(monthly_data)
-        
-        return new_entry
-    
-    def update_weekly_data(self, pe_ratio, sp500_price):
-        """Update weekly data for current year"""
-        weekly_file = self.data_dir / 'weekly_sp500_2025.csv'
-        current_date = datetime.now()
-        current_year = current_date.year
-        
-        # Only update if it's 2025 or later
-        if current_year < 2025:
-            return None
-            
-        # Calculate week end date (Friday)
-        days_until_friday = (4 - current_date.weekday()) % 7
-        if days_until_friday == 0 and current_date.weekday() != 4:
-            days_until_friday = 7
-        week_end = current_date + timedelta(days=days_until_friday)
-        week_end_str = week_end.strftime('%Y-%m-%d')
-        
-        # Calculate week number
-        week_num = current_date.isocalendar()[1]
-        
-        # Read existing data
-        weekly_data = []
-        if weekly_file.exists():
-            with open(weekly_file, 'r') as f:
-                reader = csv.DictReader(f)
-                weekly_data = list(reader)
-        
-        # Check if this week already has data
-        existing_entry = None
-        for i, entry in enumerate(weekly_data):
-            if entry.get('Week_End_Date') == week_end_str:
-                existing_entry = i
-                break
-        
-        # Create new entry
-        new_entry = {
-            'Week_End_Date': week_end_str,
-            'Year': current_year,
-            'Week': week_num,
-            'PE_Ratio': pe_ratio,
-            'SP500_Price': sp500_price,
-            'Notes': f'Updated {current_date.strftime("%Y-%m-%d %H:%M")}'
-        }
-        
-        # Update or append
-        if existing_entry is not None:
-            weekly_data[existing_entry] = new_entry
-            print(f"Updated weekly data for week ending {week_end_str}")
-        else:
-            weekly_data.append(new_entry)
-            print(f"Added new weekly data for week ending {week_end_str}")
-        
-        # Sort by date
-        weekly_data.sort(key=lambda x: x['Week_End_Date'])
-        
-        # Write back
-        fieldnames = ['Week_End_Date', 'Year', 'Week', 'PE_Ratio', 'SP500_Price', 'Notes']
-        with open(weekly_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(weekly_data)
-        
-        return new_entry
-    
-    def update_current_data(self):
-        """Update current market data and monthly historical data"""
-        print("Updating market data...")
-        
-        # Try to get PE ratio
-        pe_ratio = self.scrape_pe_ratio_multpl()
-        
-        if pe_ratio is None:
-            print("Warning: Could not fetch current PE ratio, using fallback")
-            pe_ratio = 29.6  # Reasonable recent value as fallback
-        
-        # Try to get S&P 500 price data
-        sp500_data = self.scrape_sp500_price_yahoo()
-        
-        if sp500_data is None:
-            print("Warning: Could not fetch S&P 500 price data")
-            sp500_data = {'price': 4500, 'ytd_return': 0}
-        
-        # Update monthly data file
-        monthly_entry = self.update_monthly_data(pe_ratio, sp500_data['price'])
-        
-        # Update weekly data file (for 2025+)
-        weekly_entry = self.update_weekly_data(pe_ratio, sp500_data['price'])
-        
-        # Reload historical data to include any new monthly data
-        self.historical_pes = []
-        self.load_historical_data()
-        
-        # Calculate percentile and market status
-        percentile = self.calculate_percentile(pe_ratio)
-        market_status = self.determine_market_status(pe_ratio)
-        
-        # Create current market data
-        current_data = {
-            'date': datetime.now().isoformat(),
-            'pe_ratio': round(pe_ratio, 1),
-            'sp500_price': round(sp500_data['price'], 2),
-            'ytd_return': round(sp500_data['ytd_return'], 2),
-            'percentile': percentile,
-            'status': market_status['status'],
-            'status_text': market_status['status_text'],
-            'expected_10yr_return': market_status['expected_return'],
-            'description': market_status['description'],
-            'historical_average': round(sum(self.historical_pes) / len(self.historical_pes), 1) if self.historical_pes else 17.5,
-            'monthly_data_updated': monthly_entry['Date']
-        }
-        
-        # Save to JSON file
-        current_file = self.data_dir / 'current_market.json'
-        with open(current_file, 'w') as f:
-            json.dump(current_data, f, indent=2)
-        
-        print(f"Updated market data:")
-        print(f"  PE Ratio: {current_data['pe_ratio']}")
-        print(f"  Status: {current_data['status_text']}")
-        print(f"  Percentile: {current_data['percentile']}th")
-        print(f"  Expected 10yr Return: {current_data['expected_10yr_return']}")
-        print(f"  Monthly data point: {monthly_entry['Date']}")
-        
-        # Generate updated visualizations
-        try:
-            from generate_visualization import MarketVisualizationGenerator
-            viz_gen = MarketVisualizationGenerator()
-            viz_gen.generate_all_visualizations()
-            print("✓ Visualizations updated")
-        except Exception as e:
-            print(f"Warning: Could not update visualizations: {e}")
-        
-        return current_data
-    
-    def create_monthly_historical_from_annual(self):
-        """Create monthly historical data file from annual data as starting point"""
-        monthly_file = self.data_dir / 'monthly_sp500.csv'
-        annual_file = self.data_dir / 'historical_sp500.csv'
-        
-        # If monthly file already exists, don't overwrite
-        if monthly_file.exists():
-            print("Monthly data file already exists")
-            return
-        
-        if not annual_file.exists():
-            print("Annual data file not found, cannot create monthly data")
-            return
-        
-        print("Creating monthly data from annual data...")
-        
-        # Read annual data
-        monthly_data = []
-        with open(annual_file, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                year = int(row['Year'])
-                # Use Trailing_PE_Jan1 as the most reliable PE measure
-                pe_ratio = self.safe_float(row.get('Trailing_PE_Jan1', row.get('pe_ratio', 0)))
-                
-                if pe_ratio > 0:
-                    # Create 12 monthly entries for each year, with slight variations
-                    # This simulates monthly fluctuations while keeping annual average
-                    base_pe = pe_ratio
-                    
-                    for month in range(1, 13):
-                        # Add realistic monthly variation (±10% max)
-                        import random
-                        random.seed(year * 100 + month)  # Consistent variations
-                        variation = random.uniform(-0.1, 0.1)
-                        monthly_pe = base_pe * (1 + variation)
-                        
-                        # Get last day of month
-                        last_day = calendar.monthrange(year, month)[1]
-                        date_str = f"{year}-{month:02d}-{last_day:02d}"
-                        
-                        monthly_data.append({
-                            'Date': date_str,
-                            'Year': year,
-                            'Month': month,
-                            'PE_Ratio': round(monthly_pe, 1),
-                            'SP500_Price': 0,  # Will be filled as we get real data
-                            'Month_End': date_str
+            continue
+        if date_float < 1871 or date_float > 2030:
+            continue
+
+        year = int(date_float)
+        month_frac = date_float - year
+        month = max(1, min(12, round(month_frac * 12) + 1))
+
+        cape = None
+        cape_raw = df.iloc[i, COL_CAPE] if len(df.columns) > COL_CAPE else None
+        if pd.notna(cape_raw):
+            try:
+                cape = round(float(cape_raw), 2)
+                if cape <= 0 or cape > 200:
+                    cape = None
+            except (ValueError, TypeError):
+                pass
+
+        price = None
+        price_raw = df.iloc[i, COL_PRICE]
+        if pd.notna(price_raw):
+            try:
+                price = round(float(price_raw), 2)
+            except (ValueError, TypeError):
+                pass
+
+        rate = None
+        rate_raw = df.iloc[i, COL_RATE] if len(df.columns) > COL_RATE else None
+        if pd.notna(rate_raw):
+            try:
+                rate = round(float(rate_raw), 2)
+            except (ValueError, TypeError):
+                pass
+
+        fwd10yr = None
+        if len(df.columns) > COL_FWD_10YR:
+            fwd_raw = df.iloc[i, COL_FWD_10YR]
+            if pd.notna(fwd_raw):
+                try:
+                    fwd10yr = round(float(fwd_raw) * 100, 2)
+                except (ValueError, TypeError):
+                    pass
+
+        if cape is not None:
+            records.append({
+                "date": f"{year}-{month:02d}",
+                "cape": cape,
+                "price": price,
+                "rate": rate,
+                "fwd10yr": fwd10yr,
+            })
+
+    print(f"Parsed {len(records)} monthly CAPE records from Shiller dataset")
+    return records
+
+
+def fill_recent_cape(historical, multpl_values):
+    """Append recent monthly CAPE values from multpl.com newer than Shiller data."""
+    if not historical or not multpl_values:
+        return
+
+    last_date = historical[-1]["date"]
+    last_year = int(last_date[:4])
+    last_month = int(last_date[5:7])
+
+    month_names = {
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12
+    }
+
+    added = 0
+    for entry in multpl_values:
+        date_text = entry["date_text"].lower()
+        cape_val = entry["value"]
+        parts = date_text.replace(",", "").split()
+        if len(parts) >= 3:
+            month_str = parts[0][:3]
+            month_num = month_names.get(month_str)
+            try:
+                year_num = int(parts[-1])
+            except ValueError:
+                continue
+            if month_num and year_num:
+                if year_num > last_year or (year_num == last_year and month_num > last_month):
+                    date_str = f"{year_num}-{month_num:02d}"
+                    if not any(r["date"] == date_str for r in historical):
+                        historical.append({
+                            "date": date_str,
+                            "cape": round(cape_val, 2),
+                            "price": None,
+                            "rate": None,
+                            "fwd10yr": None,
                         })
-        
-        # Write monthly data
-        fieldnames = ['Date', 'Year', 'Month', 'PE_Ratio', 'SP500_Price', 'Month_End']
-        with open(monthly_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(monthly_data)
-        
-        print(f"Created monthly historical data with {len(monthly_data)} records")
-        print(f"Covering {len(monthly_data) // 12} years of monthly data")
-        
-    def create_historical_csv(self):
-        """Create historical data file from your existing data"""
-        historical_file = self.data_dir / 'historical_sp500.csv'
-        
-        # If file already exists, don't overwrite
-        if historical_file.exists():
-            return
-        
-        # Create sample historical data for demonstration
-        sample_data = [
-            {'Year': year, 'PE_Ratio': pe} 
-            for year, pe in zip(
-                range(1980, 2025),
-                self.historical_pes + [29.6]  # Add current year
-            )
-        ]
-        
-        with open(historical_file, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=['Year', 'PE_Ratio'])
-            writer.writeheader()
-            writer.writerows(sample_data)
-        
-        print(f"Created historical data file with {len(sample_data)} records")
+                        added += 1
+
+    if added > 0:
+        historical.sort(key=lambda r: r["date"])
+        print(f"Added {added} recent months from multpl.com")
+
+
+def compute_derived(cape, treasury_yield):
+    """Compute derived metrics from current CAPE and Treasury yield."""
+    implied_return = round(-0.327 * cape + 15.42, 2)
+    earnings_yield = round((1 / cape) * 100, 2)
+
+    inflation_estimate = 2.5
+    real_treasury = treasury_yield - inflation_estimate if treasury_yield else None
+    excess_cape_yield = round(earnings_yield - real_treasury, 2) if real_treasury is not None else None
+
+    table = [
+        (0, 12, "Screaming Buy", 90, "15%+"),
+        (12, 16, "Very Attractive", 80, "12%"),
+        (16, 20, "Attractive", 70, "10%"),
+        (20, 25, "Fair Value", 60, "8%"),
+        (25, 30, "Expensive", 45, "6%"),
+        (30, 35, "Very Expensive", 35, "4%"),
+        (35, 999, "Bubble Territory", 25, "2%"),
+    ]
+
+    condition = "Unknown"
+    equity_alloc = 60
+    expected_label = "N/A"
+    for lo, hi, label, alloc, ret in table:
+        if lo <= cape < hi:
+            condition = label
+            equity_alloc = alloc
+            expected_label = ret
+            break
+
+    return {
+        "impliedReturn": implied_return,
+        "earningsYield": earnings_yield,
+        "excessCapeYield": excess_cape_yield,
+        "condition": condition,
+        "equityAllocation": equity_alloc,
+        "expectedReturnLabel": expected_label,
+    }
+
+
+def compute_percentile(cape, records):
+    """Percentile rank vs all historical CAPE readings."""
+    all_capes = [r["cape"] for r in records]
+    if not all_capes:
+        return None
+    below = sum(1 for c in all_capes if c < cape)
+    return round((below / len(all_capes)) * 100, 1)
+
+
+def build_context(cape, percentile, records):
+    """Generate contextual narrative sentence."""
+    all_capes = [r["cape"] for r in records]
+    mean_cape = round(sum(all_capes) / len(all_capes), 1)
+    max_rec = max(records, key=lambda r: r["cape"])
+
+    s = (
+        f"At the current CAPE of {cape}, the market is more expensive than "
+        f"{percentile}% of all historical readings since 1881. "
+        f"The long-run average is {mean_cape}. "
+    )
+    if cape > 35:
+        s += f"The all-time high was {max_rec['cape']} in {max_rec['date']}, during the dot-com bubble."
+    elif cape > 25:
+        s += "Historically, returns from this valuation level have been below average."
+    return s
+
+
+def find_similar_periods(cape, records):
+    """Find past periods with similar CAPE and known forward returns."""
+    margin = 3.0
+    similar = []
+    for r in records:
+        if r["fwd10yr"] is not None and abs(r["cape"] - cape) <= margin:
+            similar.append({"date": r["date"], "cape": r["cape"], "fwd10yr": r["fwd10yr"]})
+
+    seen = set()
+    deduped = []
+    for s in similar:
+        y = s["date"][:4]
+        if y not in seen:
+            seen.add(y)
+            deduped.append(s)
+    return deduped[:10]
+
+
+def determine_status(cape):
+    """Determine market status classification based on CAPE."""
+    if cape < 12:
+        return "screaming-buy", "SCREAMING BUY"
+    elif cape < 16:
+        return "very-attractive", "VERY ATTRACTIVE"
+    elif cape < 20:
+        return "attractive", "ATTRACTIVE"
+    elif cape < 25:
+        return "fair", "FAIR VALUE"
+    elif cape < 30:
+        return "expensive", "EXPENSIVE"
+    elif cape < 35:
+        return "very-expensive", "VERY EXPENSIVE"
+    else:
+        return "bubble", "BUBBLE TERRITORY"
+
 
 def main():
-    """Main function"""
-    updater = MarketDataUpdater()
-    
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    # 1. Historical Shiller data
+    historical = fetch_shiller_excel()
+    if not historical:
+        hist_path = DATA_DIR / "cape_historical.json"
+        if hist_path.exists():
+            print("Falling back to existing historical data")
+            with open(hist_path) as f:
+                historical = json.load(f)
+        else:
+            print("ERROR: No historical data available")
+            sys.exit(1)
+
+    # 2. Scrape recent monthly CAPE from multpl.com to fill gap
+    multpl_monthly = scrape_table_values(
+        "https://www.multpl.com/shiller-pe/table/by-month", limit=60
+    )
+    fill_recent_cape(historical, multpl_monthly)
+
+    # 3. Current values
+    current_cape = scrape_number("https://www.multpl.com/shiller-pe")
+    treasury_yield = scrape_number("https://www.multpl.com/10-year-treasury-rate")
+    sp500 = scrape_number("https://www.multpl.com/s-p-500-historical-prices")
+
+    if current_cape is None and multpl_monthly:
+        current_cape = multpl_monthly[0]["value"]
+    if current_cape is None:
+        current_cape = historical[-1]["cape"]
+        print(f"Using last historical CAPE: {current_cape}")
+
+    print(f"Current CAPE: {current_cape}")
+    print(f"10Y Treasury: {treasury_yield}")
+    print(f"S&P 500: {sp500}")
+
+    # 4. Compute derived metrics
+    derived = compute_derived(current_cape, treasury_yield or 4.0)
+    percentile = compute_percentile(current_cape, historical)
+    context = build_context(current_cape, percentile, historical)
+    similar = find_similar_periods(current_cape, historical)
+    status, status_text = determine_status(current_cape)
+
+    all_capes = [r["cape"] for r in historical]
+    sorted_capes = sorted(all_capes)
+    mean_cape = round(sum(all_capes) / len(all_capes), 1)
+    median_cape = round(sorted_capes[len(sorted_capes) // 2], 1)
+
+    # 5. Write historical JSON
+    hist_path = DATA_DIR / "cape_historical.json"
+    with open(hist_path, "w") as f:
+        json.dump(historical, f, separators=(",", ":"))
+    print(f"Wrote {len(historical)} records to {hist_path}")
+
+    # 6. Write current snapshot
+    current = {
+        "date": datetime.now().isoformat(),
+        "updatedDate": date.today().isoformat(),
+        "cape": current_cape,
+        "pe_ratio": current_cape,
+        "sp500_price": sp500,
+        "treasuryYield": treasury_yield,
+        "percentile": percentile,
+        "status": status,
+        "status_text": status_text,
+        "expected_10yr_return": derived["expectedReturnLabel"],
+        "description": context,
+        "historical_average": mean_cape,
+        "context": context,
+        "similarPeriods": similar,
+        "stats": {
+            "mean": mean_cape,
+            "median": median_cape,
+            "min": min(all_capes),
+            "max": max(all_capes),
+            "count": len(all_capes),
+        },
+        "impliedReturn": derived["impliedReturn"],
+        "earningsYield": derived["earningsYield"],
+        "excessCapeYield": derived["excessCapeYield"],
+        "condition": derived["condition"],
+        "equityAllocation": derived["equityAllocation"],
+        "expectedReturnLabel": derived["expectedReturnLabel"],
+    }
+
+    curr_path = DATA_DIR / "current_market.json"
+    with open(curr_path, "w") as f:
+        json.dump(current, f, indent=2)
+    print(f"Wrote current snapshot to {curr_path}")
+
+    # 7. Generate visualizations
     try:
-        # Create historical data files if they don't exist
-        updater.create_historical_csv()
-        updater.create_monthly_historical_from_annual()
-        
-        # Update current market data (which also updates monthly data)
-        updater.update_current_data()
-        
-        print("Market data update completed successfully!")
-        print("✓ Current market data updated")
-        print("✓ Monthly historical data updated")
-        
-        # Return success for GitHub Actions
-        return 0
-        
+        from generate_visualization import MarketVisualizationGenerator
+        viz_gen = MarketVisualizationGenerator()
+        viz_gen.generate_all_visualizations()
+        print("Visualizations updated")
     except Exception as e:
-        print(f"Error updating market data: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
+        print(f"Warning: Could not update visualizations: {e}")
+
+    print(f"\nSummary:")
+    print(f"  CAPE Ratio: {current_cape}")
+    print(f"  Status: {status_text}")
+    print(f"  Percentile: {percentile}th")
+    print(f"  Implied 10yr Return: {derived['impliedReturn']}%")
+    print(f"  Condition: {derived['condition']}")
+    print(f"  Historical records: {len(historical)}")
+    print("Done!")
+    return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

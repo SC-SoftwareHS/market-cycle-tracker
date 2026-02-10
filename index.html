@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Cycle Tracker - Where Are We in the S&P 500 Cycle?</title>
-    <meta name="description" content="Track S&P 500 valuations and market cycles based on PE ratios. See where we are in the market cycle with daily updates.">
+    <title>Market Cycle Tracker - Shiller CAPE Ratio Analysis</title>
+    <meta name="description" content="Track S&P 500 valuations using the Shiller CAPE ratio (cyclically adjusted PE). 140+ years of data updated daily.">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-    
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
@@ -17,7 +16,7 @@
     <div class="container">
         <header>
             <h1>Market Cycle Tracker</h1>
-            <p class="subtitle">Where are we in the S&P 500 valuation cycle?</p>
+            <p class="subtitle">Where are we in the S&P 500 valuation cycle? (Shiller CAPE)</p>
         </header>
 
         <!-- Main Gauge Section -->
@@ -26,7 +25,7 @@
                 <img id="marketGauge" src="market_gauge.png" alt="Market Valuation Gauge" class="gauge-image">
                 <div class="current-reading">
                     <span class="pe-value" id="currentPE">--</span>
-                    <span class="pe-label">Current PE Ratio</span>
+                    <span class="pe-label">Current CAPE Ratio</span>
                 </div>
             </div>
             
@@ -41,19 +40,19 @@
             <div class="metric-card">
                 <div class="metric-label">Percentile Rank</div>
                 <div class="metric-value" id="percentileRank">--</div>
-                <div class="metric-context">vs. history since 1980</div>
+                <div class="metric-context">vs. history since 1881</div>
             </div>
             
             <div class="metric-card">
                 <div class="metric-label">Historical Average</div>
                 <div class="metric-value" id="historicalAvg">--</div>
-                <div class="metric-context">Long-term mean PE</div>
+                <div class="metric-context">Long-run mean CAPE</div>
             </div>
             
             <div class="metric-card">
-                <div class="metric-label">Expected 10yr Return</div>
+                <div class="metric-label">Implied 10yr Return</div>
                 <div class="metric-value" id="expectedReturn">--</div>
-                <div class="metric-context">Based on current valuation</div>
+                <div class="metric-context">Based on CAPE regression</div>
             </div>
             
             <div class="metric-card">
@@ -63,75 +62,96 @@
             </div>
         </div>
 
-        <!-- JP Morgan Reference Section -->
+        <!-- Valuation Reference Section -->
         <div class="reference-section">
-            <h2>Valuation Ranges & Expected Returns</h2>
-            <p class="reference-note">Based on institutional research from JP Morgan Guide to the Markets and historical S&P 500 data</p>
+            <h2>CAPE Valuation Ranges &amp; Expected Returns</h2>
+            <p class="reference-note">Based on Shiller's research and 140+ years of S&P 500 data. Returns estimated via regression: Return = -0.327 &times; CAPE + 15.42 (R&sup2; = 0.74)</p>
             
             <div class="valuation-table">
                 <div class="table-header">
-                    <span>PE Range</span>
+                    <span>CAPE Range</span>
                     <span>Market Assessment</span>
-                    <span>Historical Frequency</span>
-                    <span>Expected 10yr Annual Return</span>
+                    <span>Historical Context</span>
+                    <span>Expected 10yr Real Return</span>
+                </div>
+                <div class="table-row screaming-buy">
+                    <span>&lt; 12</span>
+                    <span>Screaming Buy</span>
+                    <span>Rare - crises only</span>
+                    <span>15%+</span>
                 </div>
                 <div class="table-row attractive">
-                    <span>&lt; 16</span>
+                    <span>12 - 16</span>
+                    <span>Very Attractive</span>
+                    <span>Below long-run average</span>
+                    <span>10-12%</span>
+                </div>
+                <div class="table-row fair-attractive">
+                    <span>16 - 20</span>
                     <span>Attractive</span>
-                    <span>20% of time</span>
-                    <span>8-12%</span>
+                    <span>Near historical average</span>
+                    <span>8-10%</span>
                 </div>
                 <div class="table-row fair">
-                    <span>16-20</span>
+                    <span>20 - 25</span>
                     <span>Fair Value</span>
-                    <span>45% of time</span>
+                    <span>Moderately above average</span>
                     <span>5-8%</span>
                 </div>
                 <div class="table-row expensive">
-                    <span>20-25</span>
+                    <span>25 - 30</span>
                     <span>Expensive</span>
-                    <span>25% of time</span>
+                    <span>Top quartile historically</span>
                     <span>3-5%</span>
                 </div>
                 <div class="table-row very-expensive">
-                    <span>&gt; 25</span>
+                    <span>30 - 35</span>
                     <span>Very Expensive</span>
-                    <span>10% of time</span>
-                    <span>0-3%</span>
+                    <span>Top 5% historically</span>
+                    <span>2-4%</span>
+                </div>
+                <div class="table-row bubble">
+                    <span>&gt; 35</span>
+                    <span>Bubble Territory</span>
+                    <span>Near dot-com peak levels</span>
+                    <span>0-2%</span>
                 </div>
             </div>
         </div>
 
         <!-- Historical Chart -->
         <div class="chart-section">
-            <h2>Market Cycle Analysis (1980-2024)</h2>
+            <h2>CAPE Ratio History (1881-Present)</h2>
             <div class="chart-container">
-                <img id="marketCycleChart" src="market_cycle_chart.png" alt="S&P 500 Market Cycle Analysis" class="cycle-chart">
+                <img id="marketCycleChart" src="market_cycle_chart.png" alt="Shiller CAPE Ratio Historical Analysis" class="cycle-chart">
             </div>
             <p class="chart-note">
-                Top chart shows PE ratios over time with valuation zones. Bottom chart shows distribution of PE ratios 
-                and current market positioning. Data includes major market events and cycles since 1980.
+                The Shiller CAPE divides the S&P 500 price by the 10-year average of inflation-adjusted earnings,
+                smoothing out business cycle fluctuations. Data spans 140+ years from Robert Shiller's dataset at Yale.
             </p>
         </div>
 
         <!-- Additional Context -->
         <div class="context-section">
-            <h2>Understanding Market Valuations</h2>
+            <h2>Understanding the CAPE Ratio</h2>
             <div class="context-grid">
                 <div class="context-card">
-                    <h3>What is PE Ratio?</h3>
-                    <p>The Price-to-Earnings ratio compares the S&P 500's current price to its earnings per share. 
-                    A higher PE suggests investors are paying more for each dollar of earnings.</p>
+                    <h3>What is CAPE?</h3>
+                    <p>The Cyclically Adjusted Price-to-Earnings ratio (CAPE or Shiller PE) divides the S&P 500's
+                    current price by the 10-year average of real (inflation-adjusted) earnings. This smooths out
+                    business cycle fluctuations that distort the standard trailing PE ratio.</p>
                 </div>
                 <div class="context-card">
-                    <h3>Why It Matters</h3>
-                    <p>Historical data shows a strong inverse relationship between starting PE ratios and subsequent 
-                    10-year returns. High valuations typically lead to lower future returns.</p>
+                    <h3>Why CAPE over Trailing PE?</h3>
+                    <p>Trailing PE can be misleading during recessions (when earnings temporarily collapse, inflating PE)
+                    or booms (when peak earnings deflate PE). CAPE provides a more stable, cycle-aware measure of valuation
+                    with 140+ years of data backing the relationship to future returns.</p>
                 </div>
                 <div class="context-card">
                     <h3>Important Caveats</h3>
-                    <p>PE ratios can remain elevated or depressed for extended periods. This is not a timing tool 
-                    but rather a framework for setting return expectations.</p>
+                    <p>CAPE can remain elevated for extended periods due to structural changes (tax rates, buybacks,
+                    sector mix). It is not a timing tool -- it sets return expectations over 10-year horizons.
+                    Always consider alongside other indicators.</p>
                 </div>
             </div>
         </div>
@@ -142,9 +162,9 @@
                 <div class="data-sources">
                     <h4>Data Sources</h4>
                     <ul>
-                        <li>S&P 500 PE Ratio: <a href="https://www.multpl.com/s-p-500-pe-ratio" target="_blank">multpl.com</a></li>
-                        <li>Historical Data: S&P 500 earnings reports</li>
-                        <li>Return Expectations: JP Morgan Asset Management research</li>
+                        <li>Shiller CAPE: <a href="https://www.multpl.com/shiller-pe" target="_blank">multpl.com</a></li>
+                        <li>Historical Data: <a href="http://www.econ.yale.edu/~shiller/data.htm" target="_blank">Robert Shiller, Yale University</a></li>
+                        <li>Regression: Shiller CAPE vs subsequent 10-year real returns</li>
                     </ul>
                 </div>
                 <div class="footer-links">

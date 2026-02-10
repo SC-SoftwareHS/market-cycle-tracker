@@ -1,28 +1,23 @@
-// Market Cycle Tracker Application
+// Market Cycle Tracker Application - CAPE (Shiller PE) Based
 class MarketCycleTracker {
     constructor() {
         this.currentData = null;
         this.historicalData = null;
-        
         this.init();
     }
-    
+
     async init() {
         try {
-            // Load data
             await this.loadData();
-            
-            // Update UI elements
             this.updateMetrics();
             this.updateStatus();
             this.refreshVisualizations();
-            
         } catch (error) {
             console.error('Failed to initialize Market Cycle Tracker:', error);
             this.showError('Failed to load market data. Please try refreshing the page.');
         }
     }
-    
+
     async loadData() {
         try {
             // Load current market data
@@ -30,191 +25,159 @@ class MarketCycleTracker {
             if (currentResponse.ok) {
                 this.currentData = await currentResponse.json();
             } else {
-                // Fallback to sample data if file doesn't exist yet
-                this.currentData = {
-                    date: new Date().toISOString(),
-                    pe_ratio: 29.6,
-                    percentile: 85,
-                    status: 'expensive',
-                    expected_10yr_return: '3-5%'
-                };
+                this.currentData = this.getFallbackData();
             }
-            
-            // Try to load monthly historical data first
-            const monthlyResponse = await fetch('data/monthly_sp500.csv');
-            if (monthlyResponse.ok) {
-                const csvText = await monthlyResponse.text();
-                this.historicalData = this.parseCSV(csvText);
-                console.log(`Loaded ${this.historicalData.length} monthly data points`);
+
+            // Load CAPE historical data (JSON format, 1881-present)
+            const histResponse = await fetch('data/cape_historical.json');
+            if (histResponse.ok) {
+                this.historicalData = await histResponse.json();
+                console.log(`Loaded ${this.historicalData.length} monthly CAPE records`);
             } else {
-                // Fallback to annual historical data
-                const historicalResponse = await fetch('data/historical_sp500.csv');
-                if (historicalResponse.ok) {
-                    const csvText = await historicalResponse.text();
-                    this.historicalData = this.parseCSV(csvText);
-                    console.log(`Loaded ${this.historicalData.length} annual data points`);
-                } else {
-                    // Generate sample historical data
-                    this.historicalData = this.generateSampleHistoricalData();
-                    console.log('Using generated sample data');
-                }
+                this.historicalData = [];
+                console.log('No historical CAPE data available');
             }
-            
         } catch (error) {
             console.error('Error loading data:', error);
-            // Use fallback data
-            this.currentData = {
-                date: new Date().toISOString(),
-                pe_ratio: 29.6,
-                percentile: 85,
-                status: 'expensive',
-                expected_10yr_return: '3-5%'
-            };
-            this.historicalData = this.generateSampleHistoricalData();
+            this.currentData = this.getFallbackData();
+            this.historicalData = [];
         }
     }
-    
-    parseCSV(csvText) {
-        const lines = csvText.trim().split('\n');
-        const headers = lines[0].split(',');
-        
-        return lines.slice(1).map(line => {
-            const values = line.split(',');
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header.trim()] = values[index] ? values[index].trim() : '';
-            });
-            return row;
-        });
+
+    getFallbackData() {
+        return {
+            date: new Date().toISOString(),
+            cape: 38.0,
+            pe_ratio: 38.0,
+            percentile: 97,
+            status: 'bubble',
+            status_text: 'BUBBLE TERRITORY',
+            expected_10yr_return: '2%',
+            historical_average: 17.8,
+            condition: 'Bubble Territory',
+            impliedReturn: 2.97,
+            earningsYield: 2.63,
+        };
     }
-    
-    generateSampleHistoricalData() {
-        // Generate sample data for demonstration
-        const data = [];
-        const startYear = 1980;
-        const endYear = 2024;
-        
-        for (let year = startYear; year <= endYear; year++) {
-            // Create realistic PE ratios with some volatility
-            let pe;
-            if (year < 1995) pe = 10 + Math.random() * 8;  // Lower PEs in 80s/early 90s
-            else if (year < 2002) pe = 15 + Math.random() * 20; // Bubble period
-            else if (year < 2008) pe = 12 + Math.random() * 10; // Post-bubble
-            else if (year < 2010) pe = 8 + Math.random() * 12;  // Financial crisis
-            else pe = 15 + Math.random() * 12; // Recent era
-            
-            data.push({
-                year: year,
-                pe_ratio: Math.round(pe * 10) / 10
-            });
-        }
-        
-        return data;
-    }
-    
+
     refreshVisualizations() {
-        // Add timestamp to force refresh of images when data updates
         const timestamp = new Date().getTime();
-        
         const gaugeImg = document.getElementById('marketGauge');
         const cycleImg = document.getElementById('marketCycleChart');
-        
-        if (gaugeImg) {
-            gaugeImg.src = `market_gauge.png?t=${timestamp}`;
-        }
-        
-        if (cycleImg) {
-            cycleImg.src = `market_cycle_chart.png?t=${timestamp}`;
-        }
+        if (gaugeImg) gaugeImg.src = `market_gauge.png?t=${timestamp}`;
+        if (cycleImg) cycleImg.src = `market_cycle_chart.png?t=${timestamp}`;
     }
-    
-    
+
     updateMetrics() {
         if (!this.currentData) return;
-        
-        // Update current PE
+
+        // Update current CAPE
         const peElement = document.getElementById('currentPE');
         if (peElement) {
-            peElement.textContent = this.currentData.pe_ratio.toFixed(1);
+            const cape = this.currentData.cape || this.currentData.pe_ratio;
+            peElement.textContent = cape.toFixed(1);
         }
-        
+
         // Update percentile rank
         const percentileElement = document.getElementById('percentileRank');
         if (percentileElement) {
-            percentileElement.textContent = `${this.currentData.percentile}th`;
+            const pct = this.currentData.percentile;
+            percentileElement.textContent = typeof pct === 'number' ? `${pct}th` : `${pct}`;
         }
-        
+
         // Update historical average
         const avgElement = document.getElementById('historicalAvg');
         if (avgElement) {
-            const avg = this.calculateHistoricalAverage();
+            const avg = this.currentData.historical_average || this.calculateHistoricalAverage();
             avgElement.textContent = avg.toFixed(1);
         }
-        
+
         // Update expected return
         const returnElement = document.getElementById('expectedReturn');
         if (returnElement) {
-            returnElement.textContent = this.currentData.expected_10yr_return;
+            if (this.currentData.impliedReturn !== undefined) {
+                returnElement.textContent = `${this.currentData.impliedReturn}%`;
+            } else {
+                returnElement.textContent = this.currentData.expected_10yr_return;
+            }
         }
-        
+
         // Update last update
         const updateElement = document.getElementById('lastUpdate');
         if (updateElement) {
             const date = new Date(this.currentData.date);
             updateElement.textContent = date.toLocaleDateString();
         }
+
+        // Update condition text if element exists
+        const conditionElement = document.getElementById('conditionText');
+        if (conditionElement && this.currentData.condition) {
+            conditionElement.textContent = this.currentData.condition;
+        }
+
+        // Update earnings yield if element exists
+        const eyElement = document.getElementById('earningsYield');
+        if (eyElement && this.currentData.earningsYield) {
+            eyElement.textContent = `${this.currentData.earningsYield}%`;
+        }
     }
-    
+
     updateStatus() {
         const statusBadge = document.getElementById('statusBadge');
         if (!statusBadge || !this.currentData) return;
-        
-        const pe = this.currentData.pe_ratio;
-        let status, statusClass, statusText;
-        
-        if (pe < 16) {
+
+        const cape = this.currentData.cape || this.currentData.pe_ratio;
+        let status, statusText;
+
+        if (cape < 12) {
+            status = 'screaming-buy';
+            statusText = 'SCREAMING BUY';
+        } else if (cape < 16) {
+            status = 'very-attractive';
+            statusText = 'VERY ATTRACTIVE';
+        } else if (cape < 20) {
             status = 'attractive';
             statusText = 'ATTRACTIVE';
-        } else if (pe < 20) {
+        } else if (cape < 25) {
             status = 'fair';
             statusText = 'FAIR VALUE';
-        } else if (pe < 25) {
+        } else if (cape < 30) {
             status = 'expensive';
             statusText = 'EXPENSIVE';
-        } else {
+        } else if (cape < 35) {
             status = 'very-expensive';
             statusText = 'VERY EXPENSIVE';
+        } else {
+            status = 'bubble';
+            statusText = 'BUBBLE TERRITORY';
         }
-        
+
+        // Use server-provided status if available
+        if (this.currentData.status) {
+            status = this.currentData.status;
+        }
+        if (this.currentData.status_text) {
+            statusText = this.currentData.status_text;
+        }
+
         statusBadge.className = `status-badge ${status}`;
         statusBadge.querySelector('.status-text').textContent = statusText;
     }
-    
-    getPEColor(pe) {
-        if (pe < 16) return '#22c55e';      // Green - Attractive
-        if (pe < 20) return '#f59e0b';      // Amber - Fair
-        if (pe < 25) return '#ef4444';      // Red - Expensive
-        return '#dc2626';                   // Dark Red - Very Expensive
-    }
-    
+
     calculateHistoricalAverage() {
-        if (!this.historicalData || this.historicalData.length === 0) return 17.5;
-        
-        const peValues = this.historicalData
-            .map(d => parseFloat(d.pe_ratio || d.PE_Ratio || 0))
-            .filter(pe => pe > 0);
-        
-        const sum = peValues.reduce((acc, pe) => acc + pe, 0);
-        return sum / peValues.length;
+        if (!this.historicalData || this.historicalData.length === 0) return 17.8;
+        const capeValues = this.historicalData
+            .map(d => parseFloat(d.cape || 0))
+            .filter(c => c > 0);
+        if (capeValues.length === 0) return 17.8;
+        const sum = capeValues.reduce((acc, c) => acc + c, 0);
+        return sum / capeValues.length;
     }
-    
+
     showError(message) {
         console.error(message);
-        
-        // Update UI to show error state
         const peElement = document.getElementById('currentPE');
         if (peElement) peElement.textContent = 'Error';
-        
         const statusBadge = document.getElementById('statusBadge');
         if (statusBadge) {
             statusBadge.className = 'status-badge';
@@ -228,5 +191,4 @@ document.addEventListener('DOMContentLoaded', () => {
     new MarketCycleTracker();
 });
 
-// Export for potential use in other contexts
 window.MarketCycleTracker = MarketCycleTracker;
