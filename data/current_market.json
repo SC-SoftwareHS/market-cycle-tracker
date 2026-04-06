@@ -1,10 +1,10 @@
 {
-  "date": "2026-04-06T14:17:56.710029",
+  "date": "2026-04-06T21:43:25.507878",
   "updatedDate": "2026-04-06",
   "cape": 37.94,
   "pe_ratio": 37.94,
   "sp500_price": 6603.77,
-  "treasuryYield": 4.35,
+  "treasuryYield": 4.34,
   "percentile": 97.9,
   "status": "bubble",
   "status_text": "BUBBLE TERRITORY",
@@ -43,7 +43,7 @@
   },
   "impliedReturn": 3.01,
   "earningsYield": 2.64,
-  "excessCapeYield": 0.79,
+  "excessCapeYield": 0.8,
   "condition": "Bubble Territory",
   "equityAllocation": 25,
   "expectedReturnLabel": "2%"
