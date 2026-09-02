@@ -1,23 +1,18 @@
 {
-  "date": "2026-09-01T23:25:31.219196",
-  "updatedDate": "2026-09-01",
-  "cape": 41.74,
-  "pe_ratio": 41.74,
-  "sp500_price": 7700.57,
+  "date": "2026-09-02T23:25:58.567319",
+  "updatedDate": "2026-09-02",
+  "cape": 41.93,
+  "pe_ratio": 41.93,
+  "sp500_price": 7735.56,
   "treasuryYield": 4.79,
-  "percentile": 99.0,
+  "percentile": 99.1,
   "status": "bubble",
   "status_text": "BUBBLE TERRITORY",
   "expected_10yr_return": "2%",
-  "description": "At the current CAPE of 41.74, the market is more expensive than 99.0% of all historical readings since 1881. The long-run average is 17.8. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "description": "At the current CAPE of 41.93, the market is more expensive than 99.1% of all historical readings since 1881. The long-run average is 17.8. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "historical_average": 17.8,
-  "context": "At the current CAPE of 41.74, the market is more expensive than 99.0% of all historical readings since 1881. The long-run average is 17.8. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "context": "At the current CAPE of 41.93, the market is more expensive than 99.1% of all historical readings since 1881. The long-run average is 17.8. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "similarPeriods": [
-    {
-      "date": "1998-02",
-      "cape": 38.82,
-      "fwd10yr": -3.82
-    },
     {
       "date": "1999-01",
       "cape": 40.58,
@@ -36,9 +31,9 @@
     "max": 44.2,
     "count": 1755
   },
-  "impliedReturn": 1.77,
-  "earningsYield": 2.4,
-  "excessCapeYield": 0.11,
+  "impliedReturn": 1.71,
+  "earningsYield": 2.38,
+  "excessCapeYield": 0.09,
   "condition": "Bubble Territory",
   "equityAllocation": 25,
   "expectedReturnLabel": "2%"
