@@ -1,22 +1,22 @@
 {
-  "date": "2026-10-15T23:44:09.962321",
-  "updatedDate": "2026-10-15",
-  "cape": 41.5,
-  "pe_ratio": 41.5,
-  "sp500_price": 7804.2,
-  "treasuryYield": 5.1,
-  "percentile": 99.0,
+  "date": "2026-10-16T23:43:33.478349",
+  "updatedDate": "2026-10-16",
+  "cape": 40.54,
+  "pe_ratio": 40.54,
+  "sp500_price": 7715.79,
+  "treasuryYield": 5.09,
+  "percentile": 98.7,
   "status": "bubble",
   "status_text": "BUBBLE TERRITORY",
   "expected_10yr_return": "2%",
-  "description": "At the current CAPE of 41.5, the market is more expensive than 99.0% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "description": "At the current CAPE of 40.54, the market is more expensive than 98.7% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "historical_average": 17.9,
-  "context": "At the current CAPE of 41.5, the market is more expensive than 99.0% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "context": "At the current CAPE of 40.54, the market is more expensive than 98.7% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "similarPeriods": [
     {
       "date": "1998-02",
-      "cape": 38.82,
-      "fwd10yr": -3.82
+      "cape": 38.26,
+      "fwd10yr": -0.56
     },
     {
       "date": "1999-01",
@@ -25,8 +25,8 @@
     },
     {
       "date": "2000-01",
-      "cape": 43.77,
-      "fwd10yr": -3.03
+      "cape": 42.19,
+      "fwd10yr": -3.02
     }
   ],
   "stats": {
@@ -36,9 +36,9 @@
     "max": 44.2,
     "count": 1757
   },
-  "impliedReturn": 1.85,
-  "earningsYield": 2.41,
-  "excessCapeYield": -0.19,
+  "impliedReturn": 2.16,
+  "earningsYield": 2.47,
+  "excessCapeYield": -0.12,
   "condition": "Bubble Territory",
   "equityAllocation": 25,
   "expectedReturnLabel": "2%"
