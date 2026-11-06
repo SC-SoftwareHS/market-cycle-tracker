@@ -1,22 +1,22 @@
 {
-  "date": "2026-11-05T01:32:19.776114",
-  "updatedDate": "2026-11-05",
-  "cape": 40.13,
-  "pe_ratio": 40.13,
-  "sp500_price": 7637.84,
-  "treasuryYield": 4.94,
-  "percentile": 98.6,
+  "date": "2026-11-06T01:40:12.407662",
+  "updatedDate": "2026-11-06",
+  "cape": 38.79,
+  "pe_ratio": 38.79,
+  "sp500_price": 7402.64,
+  "treasuryYield": 4.84,
+  "percentile": 98.0,
   "status": "bubble",
   "status_text": "BUBBLE TERRITORY",
   "expected_10yr_return": "2%",
-  "description": "At the current CAPE of 40.13, the market is more expensive than 98.6% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "description": "At the current CAPE of 38.79, the market is more expensive than 98.0% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "historical_average": 17.9,
-  "context": "At the current CAPE of 40.13, the market is more expensive than 98.6% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "context": "At the current CAPE of 38.79, the market is more expensive than 98.0% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "similarPeriods": [
     {
       "date": "1998-01",
-      "cape": 37.28,
-      "fwd10yr": 0.87
+      "cape": 36.3,
+      "fwd10yr": 0.83
     },
     {
       "date": "1999-01",
@@ -24,9 +24,14 @@
       "fwd10yr": -4.41
     },
     {
-      "date": "2000-01",
-      "cape": 42.19,
-      "fwd10yr": -3.02
+      "date": "2000-02",
+      "cape": 39.37,
+      "fwd10yr": -2.11
+    },
+    {
+      "date": "2001-01",
+      "cape": 36.98,
+      "fwd10yr": -0.82
     }
   ],
   "stats": {
@@ -34,11 +39,11 @@
     "median": 16.7,
     "min": 4.78,
     "max": 44.2,
-    "count": 1757
+    "count": 1758
   },
-  "impliedReturn": 2.3,
-  "earningsYield": 2.49,
-  "excessCapeYield": 0.05,
+  "impliedReturn": 2.74,
+  "earningsYield": 2.58,
+  "excessCapeYield": 0.24,
   "condition": "Bubble Territory",
   "equityAllocation": 25,
   "expectedReturnLabel": "2%"
