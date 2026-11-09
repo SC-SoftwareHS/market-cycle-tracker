@@ -1,22 +1,22 @@
 {
-  "date": "2026-11-09T01:02:53.714630",
+  "date": "2026-11-09T23:11:54.672645",
   "updatedDate": "2026-11-09",
-  "cape": 38.91,
-  "pe_ratio": 38.91,
-  "sp500_price": 7426.35,
-  "treasuryYield": 4.86,
-  "percentile": 98.1,
+  "cape": 39.85,
+  "pe_ratio": 39.85,
+  "sp500_price": 7606.47,
+  "treasuryYield": 4.88,
+  "percentile": 98.4,
   "status": "bubble",
   "status_text": "BUBBLE TERRITORY",
   "expected_10yr_return": "2%",
-  "description": "At the current CAPE of 38.91, the market is more expensive than 98.1% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "description": "At the current CAPE of 39.85, the market is more expensive than 98.4% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "historical_average": 17.9,
-  "context": "At the current CAPE of 38.91, the market is more expensive than 98.1% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "context": "At the current CAPE of 39.85, the market is more expensive than 98.4% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
   "similarPeriods": [
     {
       "date": "1998-01",
-      "cape": 36.3,
-      "fwd10yr": 0.83
+      "cape": 37.28,
+      "fwd10yr": 0.87
     },
     {
       "date": "1999-01",
@@ -24,9 +24,9 @@
       "fwd10yr": -4.41
     },
     {
-      "date": "2000-02",
-      "cape": 41.9,
-      "fwd10yr": -3.08
+      "date": "2000-01",
+      "cape": 42.19,
+      "fwd10yr": -3.02
     },
     {
       "date": "2001-01",
@@ -41,9 +41,9 @@
     "max": 44.2,
     "count": 1758
   },
-  "impliedReturn": 2.7,
-  "earningsYield": 2.57,
-  "excessCapeYield": 0.21,
+  "impliedReturn": 2.39,
+  "earningsYield": 2.51,
+  "excessCapeYield": 0.13,
   "condition": "Bubble Territory",
   "equityAllocation": 25,
   "expectedReturnLabel": "2%"
