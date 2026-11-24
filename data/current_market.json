@@ -1,45 +1,55 @@
 {
-  "date": "2026-11-23T01:52:21.371481",
-  "updatedDate": "2026-11-23",
-  "cape": 36.44,
-  "pe_ratio": 36.44,
-  "sp500_price": 6955.54,
-  "treasuryYield": 4.92,
-  "percentile": 96.4,
-  "status": "bubble",
-  "status_text": "BUBBLE TERRITORY",
-  "expected_10yr_return": "2%",
-  "description": "At the current CAPE of 36.44, the market is more expensive than 96.4% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
-  "historical_average": 17.9,
-  "context": "At the current CAPE of 36.44, the market is more expensive than 96.4% of all historical readings since 1881. The long-run average is 17.9. The all-time high was 44.2 in 1999-02, during the dot-com bubble.",
+  "date": "2026-11-24T01:18:17.242160",
+  "updatedDate": "2026-11-24",
+  "cape": 30.81,
+  "pe_ratio": 30.81,
+  "sp500_price": null,
+  "treasuryYield": null,
+  "percentile": 94.7,
+  "status": "very-expensive",
+  "status_text": "VERY EXPENSIVE",
+  "expected_10yr_return": "4%",
+  "description": "At the current CAPE of 30.81, the market is more expensive than 94.7% of all historical readings since 1881. The long-run average is 17.4. Historically, returns from this valuation level have been below average.",
+  "historical_average": 17.4,
+  "context": "At the current CAPE of 30.81, the market is more expensive than 94.7% of all historical readings since 1881. The long-run average is 17.4. Historically, returns from this valuation level have been below average.",
   "similarPeriods": [
     {
-      "date": "1998-01",
-      "cape": 34.71,
-      "fwd10yr": 1.69
+      "date": "1929-02",
+      "cape": 27.94,
+      "fwd10yr": -0.67
     },
     {
-      "date": "2000-02",
-      "cape": 39.37,
-      "fwd10yr": -2.11
+      "date": "1997-01",
+      "cape": 28.33,
+      "fwd10yr": 5.48
+    },
+    {
+      "date": "1998-01",
+      "cape": 32.86,
+      "fwd10yr": 2.5
     },
     {
       "date": "2001-01",
-      "cape": 36.98,
-      "fwd10yr": -0.82
+      "cape": 32.33,
+      "fwd10yr": 0.46
+    },
+    {
+      "date": "2002-01",
+      "cape": 30.28,
+      "fwd10yr": 0.79
     }
   ],
   "stats": {
-    "mean": 17.9,
-    "median": 16.7,
+    "mean": 17.4,
+    "median": 16.5,
     "min": 4.78,
     "max": 44.2,
-    "count": 1758
+    "count": 1713
   },
-  "impliedReturn": 3.5,
-  "earningsYield": 2.74,
-  "excessCapeYield": 0.32,
-  "condition": "Bubble Territory",
-  "equityAllocation": 25,
-  "expectedReturnLabel": "2%"
+  "impliedReturn": 5.35,
+  "earningsYield": 3.25,
+  "excessCapeYield": 1.75,
+  "condition": "Very Expensive",
+  "equityAllocation": 35,
+  "expectedReturnLabel": "4%"
 }
